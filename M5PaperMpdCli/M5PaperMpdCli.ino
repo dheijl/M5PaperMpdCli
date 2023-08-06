@@ -29,14 +29,15 @@ void setup()
     // enable external BM8563 RTC
     M5.RTC.begin();
 
-    // compute battery percentage, >= 98% = on usb power, less = on battery
+    // compute battery percentage, >= 99% = on usb power, less = on battery
     float bat_volt = (float)(M5.getBatteryVoltage() - 3200) / 1000.0f;
     int v = (int)(((float)bat_volt / 1.05f) * 100);
 
     // show some data
     canvas.createCanvas(540, 960);
     canvas.setTextSize(3);
-    canvas.drawString("Batt: " + String(v) + "%", 20, 10);
+    String b = v >= 99 ? " USB powered." : " on battery.";
+    canvas.drawString("Batt: " + String(v) + "%" + b, 20, 10);
     if (restartByRTC)
         canvas.drawString("Power on by RTC timer", 20, 250);
     else
@@ -51,7 +52,7 @@ void setup()
 void loop()
 {
     if (M5.BtnR.wasPressed()) {
-        canvas.drawString("I'm going to sleep.zzzZZZ~", 45, 550);
+        canvas.drawString("I'm going to sleep.zzzZZZ~", 20, 550);
         canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
         delay(500);
         // this only disables MainPower, a NO-OP when on USB power
