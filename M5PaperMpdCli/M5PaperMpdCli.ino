@@ -15,10 +15,11 @@ void setup()
     // now it's safe
     M5.begin();
     // check reboot reason flag
-    if ((reason & 0b00000100) == 0b00000100) {
+    if ((reason & 0b0000101) == 0b0000101) {
         restartByRTC = true;
         Serial.println("Reboot by RTC");
     } else {
+        restartByRTC = false;
         Serial.println("Restart by power button");
     }
     M5.EPD.SetRotation(90);
@@ -40,10 +41,7 @@ void setup()
 
 void loop()
 {
-    if (M5.BtnP.wasPressed()) {
-        while (M5.BtnP.isPressed()) {
-            M5.update();
-        }
+    if (M5.BtnR.wasPressed()) {
         canvas.drawString("I'm going to sleep.zzzZZZ~", 45, 550);
         canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
         delay(1000);
@@ -52,6 +50,13 @@ void loop()
         // in case of USB power present: save power and wait for external RTC wakeup
         M5.disableEPDPower(); // digitalWrite(M5EPD_EPD_PWR_EN_PIN, 0);
         M5.disableEXTPower(); // digitalWrite(M5EPD_EXT_PWR_EN_PIN, 0);
+        esp_deep_sleep(11000000L);
+    } else if (M5.BtnL.wasPressed()) {
+        M5.RTC.clearIRQ();
+        M5.RTC.disableIRQ();
+        M5.disableEPDPower(); // digitalWrite(M5EPD_EPD_PWR_EN_PIN, 0);
+        M5.disableEXTPower(); // digitalWrite(M5EPD_EXT_PWR_EN_PIN, 0);
+        M5.disableMainPower();
         esp_deep_sleep(11000000L);
     }
     M5.update();
