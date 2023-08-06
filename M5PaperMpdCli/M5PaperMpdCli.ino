@@ -22,20 +22,29 @@ void setup()
         restartByRTC = false;
         Serial.println("Reboot by power button / USB");
     }
+    // init EPD
     M5.EPD.SetRotation(90);
     M5.TP.SetRotation(90);
     M5.EPD.Clear(true);
+    // enable external BM8563 RTC
     M5.RTC.begin();
 
+    // compute battery percentage, >= 98% = on usb power, less = on battery
+    float bat_volt = (float)(M5.getBatteryVoltage() - 3200) / 1000.0f;
+    int v = (int)(((float)bat_volt / 1.05f) * 100);
+
+    // show some data
     canvas.createCanvas(540, 960);
     canvas.setTextSize(3);
+    canvas.drawString("Batt: " + String(v) + "%", 20, 10);
     if (restartByRTC)
-        canvas.drawString("Power on by RTC timer", 20, 250); // <= this one we should when waking up from sleep
+        canvas.drawString("Power on by RTC timer", 20, 250);
     else
-        canvas.drawString("Power on by PWR Btn / USB", 20, 250);
+        canvas.drawString("Power on by PWR Btn/USB", 20, 250);
 
-    canvas.drawString("Press BtnR for sleep!", 40, 350);
-    canvas.drawString("Wakeup after 5 seconds!", 50, 450);
+    canvas.drawString("Press BtnR for sleep!", 30, 350);
+    canvas.drawString("Press BtnL for shutdown!", 30, 400);
+    canvas.drawString("Wakeup after 5 seconds!", 30, 450);
     canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
 }
 
@@ -53,6 +62,9 @@ void loop()
         esp_deep_sleep(5100000L);
     } else if (M5.BtnL.wasPressed()) {
         // proper shutdown without wake-up (if not on USB power)
+        canvas.drawString("I'm shutting down", 45, 550);
+        canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
+        delay(500);
         M5.RTC.clearIRQ();
         M5.RTC.disableIRQ();
         M5.disableEPDPower(); // digitalWrite(M5EPD_EPD_PWR_EN_PIN, 0);
