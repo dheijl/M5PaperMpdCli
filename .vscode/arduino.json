@@ -1,0 +1,8 @@
+{
+    "configuration": "PSRAM=enabled,PartitionScheme=default,CPUFreq=240,UploadSpeed=921600,DebugLevel=none,EraseFlash=none",
+    "board": "m5stack:esp32:m5stack-paper",
+    "port": "COM3",
+    "sketch": "M5PaperMpdCli\\M5PaperMpdCli.ino",
+    "output": "Y:\\build_vsc",
+    "intelliSenseGen": "disable"
+}
