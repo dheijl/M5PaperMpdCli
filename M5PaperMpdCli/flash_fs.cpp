@@ -19,10 +19,7 @@
 
 #include "flash_fs.h"
 
-// #include "tftfunctions.h"
-#define tft_println_error(x) ;
-#define tft_println(x) ;
-#define tft_println_highlight(x) ;
+#include "tftfunctions.h"
 #include "utils.h"
 
 #include <M5EPD.h>

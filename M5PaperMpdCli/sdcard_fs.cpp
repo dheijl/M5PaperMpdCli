@@ -20,10 +20,7 @@
 #include "config.h"
 
 #include "sdcard_fs.h"
-// #include "tftfunctions.h"
-#define tft_println(c) ;
-#define tft_println_highlight(x) ;
-#define tft_println_error(x) ;
+#include "tftfunctions.h"
 #include "utils.h"
 
 #include <SD.h>

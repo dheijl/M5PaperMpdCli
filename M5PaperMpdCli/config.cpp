@@ -21,10 +21,7 @@
 
 #include "flash_fs.h"
 #include "sdcard_fs.h"
-// #include "tftfunctions.h"
-#define tft_println(x) ;
-#define tft_clear() ;
-#define tft_println_error(x) ;
+#include "tftfunctions.h"
 #include "utils.h"
 
 static Configuration config;
