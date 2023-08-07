@@ -224,6 +224,7 @@
                 "C:\\Users\\Danny\\AppData\\Local\\Arduino15\\packages\\m5stack\\hardware\\esp32\\2.0.7\\libraries\\FS\\src",
                 "C:\\Users\\Danny\\AppData\\Local\\Arduino15\\packages\\m5stack\\hardware\\esp32\\2.0.7\\libraries\\SD\\src",
                 "C:\\Users\\Danny\\AppData\\Local\\Arduino15\\packages\\m5stack\\hardware\\esp32\\2.0.7\\libraries\\SPIFFS\\src",
+                "C:\\Users\\Danny\\AppData\\Local\\Arduino15\\packages\\m5stack\\hardware\\esp32\\2.0.7\\libraries\\Preferences\\src",
                 "C:\\Users\\Danny\\AppData\\Local\\Arduino15\\packages\\m5stack\\hardware\\esp32\\2.0.7\\libraries\\HTTPClient\\src",
                 "C:\\Users\\Danny\\AppData\\Local\\Arduino15\\packages\\m5stack\\hardware\\esp32\\2.0.7\\libraries\\WiFi\\src",
                 "C:\\Users\\Danny\\AppData\\Local\\Arduino15\\packages\\m5stack\\hardware\\esp32\\2.0.7\\libraries\\WiFiClientSecure\\src",
