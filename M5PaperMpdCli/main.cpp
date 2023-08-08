@@ -1,7 +1,9 @@
 #include <M5EPD.h>
 
 #include "config.h"
+#include "mpdcli.h"
 #include "tftfunctions.h"
+#include "wifi.h"
 
 M5EPD_Canvas canvas(&M5.EPD);
 
@@ -50,12 +52,19 @@ void setup()
     canvas.drawString("Press BtnL for shutdown!", 30, 350);
     canvas.drawString("Wakeup after 5 seconds!", 30, 400);
     // try to load configuration from flash or SD
-    if (!Config.load_config()) {
-        tft_clear();
+    while (!Config.load_config()) {
         tft_println_error("Missing  config!!");
-        canvas.drawString("Missing Config and no CONFIG-SD", 30, 450);
+        canvas.drawString("No NVS-Config or SD-CONFIG", 30, 450);
+        canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
         vTaskDelay(3000);
     }
+    while (!start_wifi()) {
+        tft_println("Can't start WIFI");
+        canvas.drawString("No WIFI connection", 30, 450);
+        canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
+        vTaskDelay(3000);
+    }
+    mpd.show_mpd_status();
 
     canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
 }
