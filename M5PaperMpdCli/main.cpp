@@ -58,14 +58,24 @@ void setup()
         canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
         vTaskDelay(3000);
     }
+    canvas.drawString("Config loaded", 30, 450);
     while (!start_wifi()) {
         tft_println("Can't start WIFI");
-        canvas.drawString("No WIFI connection", 30, 450);
+        canvas.drawString("No WIFI connection", 30, 500);
         canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
         vTaskDelay(3000);
     }
-    mpd.show_mpd_status();
-
+    canvas.drawString("Wifi connected", 30, 550);
+    canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
+    vTaskDelay(2000);
+    auto res = mpd.show_mpd_status();
+    canvas.clear();
+    int x = 30;
+    int y = 10;
+    for (auto line : res) {
+        canvas.drawString(line, x, y);
+        y += 40;
+    }
     canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
 }
 

@@ -55,6 +55,8 @@ enum MpdResponseKind {
     MpdFailureKind,
 };
 
+typedef vector<String> MPDStatus;
+
 class MpdResponse {
 private:
     MpdResponseType ResponseType;
@@ -239,6 +241,7 @@ public:
 class MpdConnection {
 private:
     WiFiClient Client;
+    MPDStatus status;
     string read_data()
     {
         int n = 5000;
@@ -249,7 +252,7 @@ private:
             }
         }
         if (n <= 0) {
-            tft_println_error("no response");
+            this->status.push_back("no response");
             return string();
         }
         uint8_t buf[4096];
@@ -264,10 +267,16 @@ private:
 
 protected:
 public:
+    MPDStatus& GetResponse()
+    {
+        return this->status;
+    }
+
     bool Connect(const char* host, int port)
     {
+        this->status.clear();
         if (Client.connect(host, port)) {
-            tft_println("CON MPD @" + String(host) + ":" + String(port));
+            this->status.push_back("CON MPD @" + String(host) + ":" + String(port));
             string data = read_data();
             if (data.length() == 0) {
                 return false;
@@ -275,50 +284,52 @@ public:
             MpdConnect con(data);
             String v = String(con.getVersion().c_str());
             if (v.indexOf("OK") < 0) {
-                tft_println_error(v);
+                this->status.push_back("MPD Version: " + v);
                 return false;
             }
             return true;
         } else {
-            tft_println_error("MPD Connection failed");
+            this->status.push_back("MPD Connection failed");
             return false;
         }
     }
     void Disconnect()
     {
-        tft_println("Disconnect MPD");
+        this->status.clear();
+        this->status.push_back("Disconnect MPD");
         Client.stop();
     }
 
     bool GetStatus()
     {
+        this->status.clear();
         Client.write(MPD_STATUS);
         string data = read_data();
         if (data.length() == 0) {
             return false;
         }
         MpdStatus mpd_status(data);
-        tft_print("MPD status: ");
-        tft_println_highlight(String(mpd_status.getState().c_str()));
+        this->status.push_back("MPD status: " + String(mpd_status.getState().c_str()));
         return true;
     }
 
     bool IsPlaying()
     {
+        this->status.clear();
         Client.write(MPD_STATUS);
         string data = read_data();
         if (data.length() == 0) {
             return false;
         }
         MpdStatus mpd_status(data);
-        auto status = mpd_status.getState();
-        tft_print("MPD status: ");
-        tft_println_highlight(String(status.c_str()));
-        return status.compare("play") == 0;
+        auto mpdstatus = mpd_status.getState();
+        this->status.push_back("MPD status: " + String(mpdstatus.c_str()));
+        return mpdstatus.compare("play") == 0;
     }
 
     bool GetCurrentSong()
     {
+        this->status.clear();
         Client.write(MPD_CURRENTSONG);
         string data = read_data();
         if (data.length() == 0) {
@@ -328,60 +339,64 @@ public:
         String file = String(mpd_cs.getFile().c_str());
         int p = file.lastIndexOf('/');
         file = file.substring(p + 1);
-        tft_println(file);
+        this->status.push_back(file);
         string name = mpd_cs.getName();
         if (!name.empty()) {
-            tft_println_highlight(name.c_str());
+            this->status.push_back(name.c_str());
         }
         string title = mpd_cs.getTitle();
         if (!title.empty()) {
-            tft_println_highlight(title.c_str());
+            this->status.push_back(title.c_str());
         }
         string artist = mpd_cs.getArtist();
         if (!artist.empty()) {
-            tft_println_highlight(artist.c_str());
+            this->status.push_back(artist.c_str());
         }
         return true;
     }
 
     bool Stop()
     {
+        this->status.clear();
         Client.write(MPD_STOP);
         string data = read_data();
         if (data.length() == 0) {
             return false;
         }
         MpdSimpleCommand mpd_command(data);
-        tft_println(mpd_command.GetResult().c_str());
+        this->status.push_back(mpd_command.GetResult().c_str());
         return true;
     }
 
     bool Play()
     {
+        this->status.clear();
         Client.write(MPD_START);
         string data = read_data();
         if (data.length() == 0) {
             return false;
         }
         MpdSimpleCommand mpd_command(data);
-        tft_println(mpd_command.GetResult().c_str());
+        this->status.push_back(mpd_command.GetResult().c_str());
         return true;
     }
 
     bool Clear()
     {
+        this->status.clear();
         Client.write(MPD_CLEAR);
         string data = read_data();
         if (data.length() == 0) {
             return false;
         }
         MpdSimpleCommand mpd_command(data);
-        tft_println(mpd_command.GetResult().c_str());
+        this->status.push_back(mpd_command.GetResult().c_str());
         return true;
     }
 
     bool Add_Url(const char* url)
     {
+        this->status.clear();
         string add_cmd(MPD_ADD);
         int pos = add_cmd.find("{}");
         add_cmd.replace(pos, 2, url);
@@ -392,7 +407,7 @@ public:
             return false;
         }
         MpdSimpleCommand mpd_command(data);
-        tft_println(mpd_command.GetResult().c_str());
+        this->status.push_back(mpd_command.GetResult().c_str());
         return true;
     }
 };
@@ -400,12 +415,19 @@ public:
 class MPD_Client {
 private:
     MpdConnection con;
-    void show_player(MPD_PLAYER& player);
+    MPDStatus& show_player(MPD_PLAYER& player);
+    MPDStatus status;
+    void AppendStatus(MPDStatus& response)
+    {
+        for (auto line : response) {
+            this->status.push_back(line);
+        }
+    }
 
 public:
-    void show_mpd_status();
-    void toggle_mpd_status();
-    void play_favourite(const FAVOURITE& fav);
+    MPDStatus& show_mpd_status();
+    MPDStatus& toggle_mpd_status();
+    MPDStatus& play_favourite(const FAVOURITE& fav);
 };
 
 extern MPD_Client& mpd;

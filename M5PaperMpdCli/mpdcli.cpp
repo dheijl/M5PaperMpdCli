@@ -28,64 +28,80 @@
 static MPD_Client _mpd;
 MPD_Client& mpd = _mpd;
 
-void MPD_Client::show_player(MPD_PLAYER& player)
+MPDStatus& MPD_Client::show_player(MPD_PLAYER& player)
 {
-    tft_println("Player: " + String(player.player_name));
+    this->status.push_back("Player: " + String(player.player_name));
+    return status;
 }
 
-void MPD_Client::toggle_mpd_status()
+MPDStatus& MPD_Client::toggle_mpd_status()
 {
     if (start_wifi()) {
         auto player = Config.get_active_mpd();
+        this->status.clear();
         show_player(player);
         if (this->con.Connect(player.player_ip, player.player_port)) {
+            this->AppendStatus(this->con.GetResponse());
             if (this->con.IsPlaying()) {
-                tft_println_highlight("Stop playing");
+                this->AppendStatus(this->con.GetResponse());
+                this->status.push_back("Stop playing");
+                this->AppendStatus(this->con.GetResponse());
                 this->con.Stop();
+                this->AppendStatus(this->con.GetResponse());
             } else {
-                tft_println_highlight("Start playing");
+                this->status.push_back("Start playing");
                 this->con.Play();
+                this->AppendStatus(this->con.GetResponse());
             }
             this->con.Disconnect();
+            this->AppendStatus(this->con.GetResponse());
         }
-        vTaskDelay(500);
-        tft_clear();
+        return this->status;
     }
 }
 
-void MPD_Client::show_mpd_status()
+MPDStatus& MPD_Client::show_mpd_status()
 {
     float bat_volt = (float)(M5.getBatteryVoltage() - 3200) / 1000.0f;
     int bat_level = (int)(((float)bat_volt / 1.05f) * 100);
     auto heap = ESP.getFreeHeap() / 1024;
     auto psram = ESP.getFreePsram() / (1024 * 1024);
-    tft_println("B=" + String(bat_level) + "%,H=" + String(heap) + "K,PS=" + String(psram) + "M");
+    this->status.clear();
+    this->status.push_back("B=" + String(bat_level) + "%,H=" + String(heap) + "K,PS=" + String(psram) + "M");
     if (start_wifi()) {
         auto player = Config.get_active_mpd();
         show_player(player);
         if (this->con.Connect(player.player_ip, player.player_port)) {
+            this->AppendStatus(this->con.GetResponse());
             this->con.GetStatus();
+            this->AppendStatus(this->con.GetResponse());
             this->con.GetCurrentSong();
+            this->AppendStatus(this->con.GetResponse());
             this->con.Disconnect();
+            this->AppendStatus(this->con.GetResponse());
         }
-        vTaskDelay(3000);
-        tft_clear();
     }
+    return this->status;
 }
 
-void MPD_Client::play_favourite(const FAVOURITE& fav)
+MPDStatus& MPD_Client::play_favourite(const FAVOURITE& fav)
 {
     if (start_wifi()) {
+        this->status.clear();
         auto player = Config.get_active_mpd();
         show_player(player);
-        tft_println_highlight("Play " + String(fav.fav_name));
+        this->status.push_back("Play " + String(fav.fav_name));
         if (this->con.Connect(player.player_ip, player.player_port)) {
+            this->AppendStatus(this->con.GetResponse());
             this->con.Clear();
+            this->AppendStatus(this->con.GetResponse());
             this->con.Add_Url(fav.fav_url);
+            this->AppendStatus(this->con.GetResponse());
             this->con.Play();
+            this->AppendStatus(this->con.GetResponse());
             this->con.Disconnect();
+            this->AppendStatus(this->con.GetResponse());
         }
-        vTaskDelay(1500);
-        tft_clear();
     }
+    return this->status;
 }
