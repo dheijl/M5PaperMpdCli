@@ -34,7 +34,7 @@ void tft_clear();
 void tft_sleep();
 */
 
-#define tft_println(x) ;
-#define tft_clear() ;
-#define tft_println_error(x) ;
-#define tft_println_highlight(x) ;
+#define tft_println(x) Serial.println(x)
+#define tft_clear() Serial.println()
+#define tft_println_error(x) Serial.println(x)
+#define tft_println_highlight(x) Serial.println(x)
