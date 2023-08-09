@@ -1,3 +1,5 @@
+#include <time.h>
+
 #include <M5EPD.h>
 
 #include "config.h"
@@ -56,7 +58,7 @@ void setup()
     y += 40;
     canvas.drawString("Press BtnL for shutdown!", x, y);
     y += 40;
-    canvas.drawString("Wakeup after 5 seconds!", x, y);
+    canvas.drawString("Wakeup after 60 seconds!", x, y);
     y += 40;
     // try to load configuration from flash or SD
     while (!Config.load_config()) {
@@ -86,32 +88,32 @@ void setup()
         y += 40;
     }
     canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
+    stop_wifi();
 }
 
 void loop()
 {
-    if (M5.BtnR.wasPressed()) {
-        canvas.drawString("I'm going to sleep.zzzZZZ~", 20, 550);
-        canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
-        delay(500);
-        // this only disables MainPower, a NO-OP when on USB power
-        M5.shutdown(5); // shut down now and wake up after 5 seconds if on battery
-        // in case of USB power present: save power and wait for external RTC wakeup
-        M5.disableEPDPower(); // digitalWrite(M5EPD_EPD_PWR_EN_PIN, 0);
-        M5.disableEXTPower(); // digitalWrite(M5EPD_EXT_PWR_EN_PIN, 0);
-        esp_deep_sleep(5100000L);
-    } else if (M5.BtnL.wasPressed()) {
+    if (M5.BtnL.wasPressed()) {
         // proper shutdown without wake-up (if not on USB power)
         canvas.drawString("I'm shutting down", 45, 550);
         canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
-        delay(500);
+        vTaskDelay(250);
         M5.RTC.clearIRQ();
         M5.RTC.disableIRQ();
         M5.disableEPDPower(); // digitalWrite(M5EPD_EPD_PWR_EN_PIN, 0);
         M5.disableEXTPower(); // digitalWrite(M5EPD_EXT_PWR_EN_PIN, 0);
         M5.disableMainPower();
-        esp_deep_sleep(5100000L);
+        esp_deep_sleep(60100000L);
     }
+    canvas.drawString("I'm going to sleep.zzzZZZ~", 20, 550);
+    canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
+    vTaskDelay(250);
+    // this only disables MainPower, a NO-OP when on USB power
+    M5.shutdown(60); // shut down now and wake up after 60 seconds if on battery
+    // in case of USB power present: save power and wait for external RTC wakeup
+    M5.disableEPDPower(); // digitalWrite(M5EPD_EPD_PWR_EN_PIN, 0);
+    M5.disableEXTPower(); // digitalWrite(M5EPD_EXT_PWR_EN_PIN, 0);
+    esp_deep_sleep(60100000L);
     M5.update();
-    delay(100);
+    vTaskDelay(100);
 }

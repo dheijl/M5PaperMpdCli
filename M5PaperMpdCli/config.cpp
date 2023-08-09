@@ -57,9 +57,9 @@ const MPD_PLAYER& Configuration::get_active_mpd()
     return *(this->mpd_players[config.player_index]);
 }
 
-const WIFI_ACC_PT& Configuration::getAP()
+const NETWORK_CFG& Configuration::getNW_CFG()
 {
-    return this->ap;
+    return this->nw_cfg;
 }
 
 const PLAYERS& Configuration::getPlayers()
@@ -76,7 +76,7 @@ bool Configuration::load_SD_config()
 {
     tft_clear();
     tft_println("Check SD config");
-    if (SD_Config::read_wifi(this->ap)
+    if (SD_Config::read_wifi(this->nw_cfg)
         && SD_Config::read_players(this->mpd_players)
         && SD_Config::read_favourites(this->favourites)) {
         return true;
@@ -88,7 +88,7 @@ bool Configuration::load_SD_config()
 bool Configuration::load_FLASH_config()
 {
     tft_println("Load FLASH config");
-    if (NVS_Config::read_wifi(this->ap)
+    if (NVS_Config::read_wifi(this->nw_cfg)
         && NVS_Config::read_players(this->mpd_players)
         && NVS_Config::read_favourites(this->favourites)
         && NVS_Config::read_player_index()) {
@@ -102,7 +102,7 @@ bool Configuration::save_FLASH_config()
 {
     tft_clear();
     tft_println("Save FLASH config");
-    if (NVS_Config::write_wifi(this->ap)
+    if (NVS_Config::write_wifi(this->nw_cfg)
         && NVS_Config::write_players(this->mpd_players)
         && NVS_Config::write_favourites(this->favourites)) {
         return true;

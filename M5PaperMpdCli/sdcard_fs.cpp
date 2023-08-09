@@ -31,7 +31,7 @@
 
 #define TFCARD_CS_PIN GPIO_NUM_4
 
-bool SD_Config::read_wifi(WIFI_ACC_PT& ap)
+bool SD_Config::read_wifi(NETWORK_CFG& ap)
 {
     bool result = false;
     if (!SD.begin(TFCARD_CS_PIN, SPI, 25000000)) {
@@ -92,9 +92,10 @@ bool SD_Config::read_favourites(FAVOURITES& favourites)
     return result;
 }
 
-bool SD_Config::parse_wifi_file(File wifif, WIFI_ACC_PT& ap)
+bool SD_Config::parse_wifi_file(File wifif, NETWORK_CFG& ap)
 {
-    bool result = false;
+    bool have_ntp = false;
+    bool have_wifi = false;
     tft_println("Parsing WiFi ssid/psw");
     while (wifif.available()) {
         String line = wifif.readStringUntil('\n');
@@ -106,12 +107,24 @@ bool SD_Config::parse_wifi_file(File wifif, WIFI_ACC_PT& ap)
             if (parts.size() == 2) {
                 ap.ssid = strdup(parts[0].c_str());
                 ap.psw = strdup(parts[1].c_str());
-                result = true;
+                have_wifi = true;
+            }
+        }
+        line = wifif.readStringUntil('\n');
+        line.trim();
+        DPRINT(line);
+        string ntp = line.c_str();
+        if (ntp.length() > 1) {
+            vector<string> parts = split(ntp, '|');
+            if (parts.size() == 2) {
+                ap.ntp_server = strdup(parts[0].c_str());
+                ap.tz = strdup(parts[1].c_str());
+                have_ntp = true;
             }
         }
     }
     wifif.close();
-    return result;
+    return have_wifi && have_ntp;
 }
 
 bool SD_Config::parse_players_file(File plf, PLAYERS& players)

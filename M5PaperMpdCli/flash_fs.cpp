@@ -33,7 +33,7 @@ static const constexpr char* NVS_PLAYERS = "players";
 static const constexpr char* NVS_FAVS = "favs";
 static const constexpr char* NVS_CUR_MPD = "curmpd";
 
-bool NVS_Config::write_wifi(const WIFI_ACC_PT& ap)
+bool NVS_Config::write_wifi(const NETWORK_CFG& ap)
 {
     Preferences prefs;
     bool result = false;
@@ -43,10 +43,13 @@ bool NVS_Config::write_wifi(const WIFI_ACC_PT& ap)
         vTaskDelay(2000);
         return result;
     }
+    prefs.clear();
     result = true;
     DPRINT("wprefs: " + String(ap.ssid) + "|" + String(ap.psw));
     result = prefs.putString("ssid", ap.ssid) > 0;
     result = prefs.putString("psw", ap.psw) > 0;
+    result = prefs.putString("ntp_server", ap.ntp_server) > 0;
+    result = prefs.putString("tz", ap.tz) > 0;
     if (!result) {
         tft_println_error("wifi prefs put error");
         vTaskDelay(2000);
@@ -55,7 +58,7 @@ bool NVS_Config::write_wifi(const WIFI_ACC_PT& ap)
     return result;
 }
 
-bool NVS_Config::read_wifi(WIFI_ACC_PT& ap)
+bool NVS_Config::read_wifi(NETWORK_CFG& ap)
 {
     Preferences prefs;
     if (!prefs.begin(NVS_WIFI, true)) {
@@ -66,15 +69,24 @@ bool NVS_Config::read_wifi(WIFI_ACC_PT& ap)
     }
     String ssid = prefs.getString("ssid");
     String psw = prefs.getString("psw");
+    String ntp_server = prefs.getString("ntp_server");
+    String tz = prefs.getString("tz");
     prefs.end();
     DPRINT(ssid + "|" + psw);
     if (ssid.isEmpty() || psw.isEmpty()) {
         tft_println_error("empty wifi prefs!");
         return false;
     }
+    if (ntp_server.isEmpty() || tz.isEmpty()) {
+        tft_println_error("empty NTP prefs!");
+        return false;
+    }
     ap.ssid = strdup(ssid.c_str());
     ap.psw = strdup(psw.c_str());
+    ap.ntp_server = strdup(ntp_server.c_str());
+    ap.tz = strdup(tz.c_str());
     DPRINT("Wifi config: " + String(ap.ssid) + "|" + String(ap.psw));
+    DPRINT("NTP config: " + String(ap.ntp_server) + "|" + String(ap.tz));
     return true;
 }
 

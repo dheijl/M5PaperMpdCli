@@ -24,7 +24,7 @@ bool start_wifi()
     WiFi.softAPdisconnect(true);
     tft_println("Connecting wifi...");
     WiFi.mode(WIFI_STA);
-    auto ap = Config.getAP();
+    auto ap = Config.getNW_CFG();
     WiFi.begin(ap.ssid, ap.psw);
     have_wifi = false;
     long now = millis();

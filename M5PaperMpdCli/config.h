@@ -39,15 +39,19 @@ using std::vector;
 #define DPRINT(x)
 #endif
 
-typedef struct wifi_acc_pt {
+typedef struct network_cfg {
     const char* ssid;
     const char* psw;
-} WIFI_ACC_PT;
+    const char* ntp_server;
+    const char* tz;
+} NETWORK_CFG;
 
 typedef struct mpd_player {
     const char* player_name;
     const char* player_ip;
     uint16_t player_port;
+    const char* ntp_server;
+    const char* tz;
 } MPD_PLAYER;
 
 typedef struct favourite {
@@ -61,7 +65,7 @@ typedef vector<FAVOURITE*> FAVOURITES;
 class Configuration {
 private:
     uint16_t player_index;
-    WIFI_ACC_PT ap;
+    NETWORK_CFG nw_cfg;
     PLAYERS mpd_players;
     FAVOURITES favourites;
     bool load_SD_config();
@@ -69,7 +73,7 @@ private:
     bool save_FLASH_config();
 
 public:
-    const WIFI_ACC_PT& getAP();
+    const NETWORK_CFG& getNW_CFG();
     const PLAYERS& getPlayers();
     const FAVOURITES& getFavourites();
     bool load_config();

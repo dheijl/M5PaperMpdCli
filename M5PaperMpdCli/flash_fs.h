@@ -26,11 +26,11 @@ public:
     static bool read_player_index();
     static void write_player_index(uint16_t new_pl);
 
-    static bool write_wifi(const WIFI_ACC_PT& ap);
+    static bool write_wifi(const NETWORK_CFG& ap);
     static bool write_players(const PLAYERS& players);
     static bool write_favourites(const FAVOURITES& favourites);
 
-    static bool read_wifi(WIFI_ACC_PT& ap);
+    static bool read_wifi(NETWORK_CFG& ap);
     static bool read_players(PLAYERS& players);
     static bool read_favourites(FAVOURITES& favourites);
 };
