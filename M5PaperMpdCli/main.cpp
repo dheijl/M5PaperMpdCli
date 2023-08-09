@@ -41,37 +41,46 @@ void setup()
     // show some data
     canvas.createCanvas(540, 960);
     canvas.setTextSize(3);
+    canvas.clear();
+    int x = 20;
+    int y = 10;
     String b = v >= 99 ? " USB powered." : " on battery.";
-    canvas.drawString("Batt: " + String(v) + "%" + b, 20, 10);
+    canvas.drawString("Batt: " + String(v) + "%" + b, x, y);
+    y += 40;
     if (restartByRTC)
-        canvas.drawString("Power on by RTC timer", 20, 250);
+        canvas.drawString("Power on by RTC timer", x, y);
     else
-        canvas.drawString("Power on by PWR Btn/USB", 20, 250);
-
-    canvas.drawString("Press BtnR for sleep!", 30, 300);
-    canvas.drawString("Press BtnL for shutdown!", 30, 350);
-    canvas.drawString("Wakeup after 5 seconds!", 30, 400);
+        canvas.drawString("Power on by PWR Btn/USB", x, y);
+    y += 40;
+    canvas.drawString("Press BtnR for sleep!", x, y);
+    y += 40;
+    canvas.drawString("Press BtnL for shutdown!", x, y);
+    y += 40;
+    canvas.drawString("Wakeup after 5 seconds!", x, y);
+    y += 40;
     // try to load configuration from flash or SD
     while (!Config.load_config()) {
         tft_println_error("Missing  config!!");
-        canvas.drawString("No NVS-Config or SD-CONFIG", 30, 450);
+        canvas.drawString("No NVS-Config or SD-CONFIG", x, y);
         canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
         vTaskDelay(3000);
     }
-    canvas.drawString("Config loaded", 30, 450);
+    y += 40;
+    canvas.drawString("Config loaded", x, y);
+    y += 40;
     while (!start_wifi()) {
         tft_println("Can't start WIFI");
-        canvas.drawString("No WIFI connection", 30, 500);
+        canvas.drawString("No WIFI connection", x, y);
         canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
         vTaskDelay(3000);
     }
-    canvas.drawString("Wifi connected", 30, 550);
+    y += 40;
+    canvas.drawString("Wifi connected", x, y);
     canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
-    vTaskDelay(2000);
     auto res = mpd.show_mpd_status();
     canvas.clear();
-    int x = 30;
-    int y = 10;
+    x = 20;
+    y = 10;
     for (auto line : res) {
         canvas.drawString(line, x, y);
         y += 40;
