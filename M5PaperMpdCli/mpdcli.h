@@ -417,10 +417,18 @@ private:
     MpdConnection con;
     MPDStatus& show_player(MPD_PLAYER& player);
     MPDStatus status;
-    void AppendStatus(MPDStatus& response)
+    void appendStatus(MPDStatus& response)
     {
         for (auto line : response) {
-            this->status.push_back(line);
+            int p = line.indexOf(" - ");
+            if (p > -1) {
+                String line1 = line.substring(0, p);
+                String line2 = line.substring(p + 3);
+                this->status.push_back(line1);
+                this->status.push_back(line2);
+            } else {
+                this->status.push_back(line);
+            }
         }
     }
 

@@ -33,7 +33,7 @@ static const constexpr char* NVS_PLAYERS = "players";
 static const constexpr char* NVS_FAVS = "favs";
 static const constexpr char* NVS_CUR_MPD = "curmpd";
 
-bool NVS_Config::write_wifi(const NETWORK_CFG& ap)
+bool NVS_Config::write_wifi(const NETWORK_CFG& nw_cfg)
 {
     Preferences prefs;
     bool result = false;
@@ -45,11 +45,11 @@ bool NVS_Config::write_wifi(const NETWORK_CFG& ap)
     }
     prefs.clear();
     result = true;
-    DPRINT("wprefs: " + String(ap.ssid) + "|" + String(ap.psw));
-    result = prefs.putString("ssid", ap.ssid) > 0;
-    result = prefs.putString("psw", ap.psw) > 0;
-    result = prefs.putString("ntp_server", ap.ntp_server) > 0;
-    result = prefs.putString("tz", ap.tz) > 0;
+    DPRINT("wprefs: " + String(nw_cfg.ssid) + "|" + String(nw_cfg.psw));
+    result = prefs.putString("ssid", nw_cfg.ssid) > 0;
+    result = prefs.putString("psw", nw_cfg.psw) > 0;
+    result = prefs.putString("ntp_server", nw_cfg.ntp_server) > 0;
+    result = prefs.putString("tz", nw_cfg.tz) > 0;
     if (!result) {
         tft_println_error("wifi prefs put error");
         vTaskDelay(2000);
@@ -58,7 +58,7 @@ bool NVS_Config::write_wifi(const NETWORK_CFG& ap)
     return result;
 }
 
-bool NVS_Config::read_wifi(NETWORK_CFG& ap)
+bool NVS_Config::read_wifi(NETWORK_CFG& nw_cfg)
 {
     Preferences prefs;
     if (!prefs.begin(NVS_WIFI, true)) {
@@ -81,12 +81,12 @@ bool NVS_Config::read_wifi(NETWORK_CFG& ap)
         tft_println_error("empty NTP prefs!");
         return false;
     }
-    ap.ssid = strdup(ssid.c_str());
-    ap.psw = strdup(psw.c_str());
-    ap.ntp_server = strdup(ntp_server.c_str());
-    ap.tz = strdup(tz.c_str());
-    DPRINT("Wifi config: " + String(ap.ssid) + "|" + String(ap.psw));
-    DPRINT("NTP config: " + String(ap.ntp_server) + "|" + String(ap.tz));
+    nw_cfg.ssid = strdup(ssid.c_str());
+    nw_cfg.psw = strdup(psw.c_str());
+    nw_cfg.ntp_server = strdup(ntp_server.c_str());
+    nw_cfg.tz = strdup(tz.c_str());
+    DPRINT("Wifi config: " + String(nw_cfg.ssid) + "|" + String(nw_cfg.psw));
+    DPRINT("NTP config: " + String(nw_cfg.ntp_server) + "|" + String(nw_cfg.tz));
     return true;
 }
 

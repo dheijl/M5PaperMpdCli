@@ -31,7 +31,7 @@
 
 #define TFCARD_CS_PIN GPIO_NUM_4
 
-bool SD_Config::read_wifi(NETWORK_CFG& ap)
+bool SD_Config::read_wifi(NETWORK_CFG& nw_cfg)
 {
     bool result = false;
     if (!SD.begin(TFCARD_CS_PIN, SPI, 25000000)) {
@@ -43,7 +43,7 @@ bool SD_Config::read_wifi(NETWORK_CFG& ap)
     tft_println_highlight("Loading wifi");
     File wifif = SD.open("/wifi.txt", FILE_READ);
     if (wifif) {
-        result = parse_wifi_file(wifif, ap);
+        result = parse_wifi_file(wifif, nw_cfg);
     } else {
         tft_println_error("error reading wifi.txt");
         vTaskDelay(1000);
@@ -92,7 +92,7 @@ bool SD_Config::read_favourites(FAVOURITES& favourites)
     return result;
 }
 
-bool SD_Config::parse_wifi_file(File wifif, NETWORK_CFG& ap)
+bool SD_Config::parse_wifi_file(File wifif, NETWORK_CFG& nw_cfg)
 {
     bool have_ntp = false;
     bool have_wifi = false;
@@ -105,8 +105,8 @@ bool SD_Config::parse_wifi_file(File wifif, NETWORK_CFG& ap)
         if (wifi.length() > 1) {
             vector<string> parts = split(wifi, '|');
             if (parts.size() == 2) {
-                ap.ssid = strdup(parts[0].c_str());
-                ap.psw = strdup(parts[1].c_str());
+                nw_cfg.ssid = strdup(parts[0].c_str());
+                nw_cfg.psw = strdup(parts[1].c_str());
                 have_wifi = true;
             }
         }
@@ -117,8 +117,8 @@ bool SD_Config::parse_wifi_file(File wifif, NETWORK_CFG& ap)
         if (ntp.length() > 1) {
             vector<string> parts = split(ntp, '|');
             if (parts.size() == 2) {
-                ap.ntp_server = strdup(parts[0].c_str());
-                ap.tz = strdup(parts[1].c_str());
+                nw_cfg.ntp_server = strdup(parts[0].c_str());
+                nw_cfg.tz = strdup(parts[1].c_str());
                 have_ntp = true;
             }
         }

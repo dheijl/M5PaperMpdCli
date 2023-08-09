@@ -33,21 +33,71 @@ void setup()
     M5.EPD.SetRotation(90);
     M5.TP.SetRotation(90);
     M5.EPD.Clear(true);
+    int x = 20;
+    int y = 10;
     // enable external BM8563 RTC
     M5.RTC.begin();
+    // create canvas
+    canvas.createCanvas(540, 960);
+    canvas.setTextSize(3);
+    canvas.clear();
+    // try to load configuration from flash or SD
+    while (!Config.load_config()) {
+        tft_println_error("Missing  config!!");
+        canvas.drawString("No NVS-Config or SD-CONFIG", x, y);
+        canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
+        vTaskDelay(3000);
+    }
+    y += 40;
+    canvas.drawString("Config loaded", x, y);
+    y += 40;
+    if (!start_wifi()) {
+        tft_println("Can't start WIFI");
+        canvas.drawString("No WIFI connection", x, y);
+        y += 40;
+        canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
+        stop_wifi();
+        vTaskDelay(3000);
+        M5.shutdown(1);
+    }
+    canvas.drawString("Wifi connected", x, y);
+    canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
+    if (!restartByRTC) {
+        // get network config
+        auto cfg = Config.getNW_CFG();
+        DPRINT("NTP: " + String(cfg.ntp_server));
+        DPRINT("TZ: " + String(cfg.tz));
+        // get UTC time from SNTP
+        configTime(0, 0, cfg.ntp_server);
+        // configure local time
+        setenv("TZ", cfg.tz, 1);
+        tzset();
+        struct tm timeInfo;
+        if (!getLocalTime(&timeInfo)) {
+            canvas.drawString("Could not obtain time info", x, y);
+            canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
+            vTaskDelay(3000);
+            y += 40;
+        }
+        rtc_time_t time_struct;
+        time_struct.hour = timeInfo.tm_hour;
+        time_struct.min = timeInfo.tm_min;
+        time_struct.sec = timeInfo.tm_sec;
+        M5.RTC.setTime(&time_struct);
+        rtc_date_t date_struct;
+        date_struct.week = timeInfo.tm_wday;
+        date_struct.mon = timeInfo.tm_mon + 1;
+        date_struct.day = timeInfo.tm_mday;
+        date_struct.year = timeInfo.tm_year + 1900;
+        M5.RTC.setDate(&date_struct);
+    }
 
     // compute battery percentage, >= 99% = on usb power, less = on battery
     float bat_volt = (float)(M5.getBatteryVoltage() - 3200) / 1000.0f;
     int v = (int)(((float)bat_volt / 1.05f) * 100);
 
-    // show some data
-    canvas.createCanvas(540, 960);
-    canvas.setTextSize(3);
-    canvas.clear();
-    int x = 20;
-    int y = 10;
     String b = v >= 99 ? " USB powered." : " on battery.";
-    canvas.drawString("Batt: " + String(v) + "%" + b, x, y);
+    canvas.drawString("B: " + String(v) + "%" + b, x, y);
     y += 40;
     if (restartByRTC)
         canvas.drawString("Power on by RTC timer", x, y);
@@ -59,25 +109,6 @@ void setup()
     canvas.drawString("Press BtnL for shutdown!", x, y);
     y += 40;
     canvas.drawString("Wakeup after 60 seconds!", x, y);
-    y += 40;
-    // try to load configuration from flash or SD
-    while (!Config.load_config()) {
-        tft_println_error("Missing  config!!");
-        canvas.drawString("No NVS-Config or SD-CONFIG", x, y);
-        canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
-        vTaskDelay(3000);
-    }
-    y += 40;
-    canvas.drawString("Config loaded", x, y);
-    y += 40;
-    while (!start_wifi()) {
-        tft_println("Can't start WIFI");
-        canvas.drawString("No WIFI connection", x, y);
-        canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
-        vTaskDelay(3000);
-    }
-    y += 40;
-    canvas.drawString("Wifi connected", x, y);
     canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
     auto res = mpd.show_mpd_status();
     canvas.clear();
@@ -105,7 +136,7 @@ void loop()
         M5.disableMainPower();
         esp_deep_sleep(60100000L);
     }
-    canvas.drawString("I'm going to sleep.zzzZZZ~", 20, 550);
+    canvas.drawString("sleeping...", 20, 550);
     canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
     vTaskDelay(250);
     // this only disables MainPower, a NO-OP when on USB power

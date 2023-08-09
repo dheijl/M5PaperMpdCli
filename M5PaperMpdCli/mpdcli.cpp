@@ -41,20 +41,20 @@ MPDStatus& MPD_Client::toggle_mpd_status()
         this->status.clear();
         show_player(player);
         if (this->con.Connect(player.player_ip, player.player_port)) {
-            this->AppendStatus(this->con.GetResponse());
+            this->appendStatus(this->con.GetResponse());
             if (this->con.IsPlaying()) {
-                this->AppendStatus(this->con.GetResponse());
+                this->appendStatus(this->con.GetResponse());
                 this->status.push_back("Stop playing");
-                this->AppendStatus(this->con.GetResponse());
+                this->appendStatus(this->con.GetResponse());
                 this->con.Stop();
-                this->AppendStatus(this->con.GetResponse());
+                this->appendStatus(this->con.GetResponse());
             } else {
                 this->status.push_back("Start playing");
                 this->con.Play();
-                this->AppendStatus(this->con.GetResponse());
+                this->appendStatus(this->con.GetResponse());
             }
             this->con.Disconnect();
-            this->AppendStatus(this->con.GetResponse());
+            this->appendStatus(this->con.GetResponse());
         }
         return this->status;
     }
@@ -67,18 +67,27 @@ MPDStatus& MPD_Client::show_mpd_status()
     auto heap = ESP.getFreeHeap() / 1024;
     auto psram = ESP.getFreePsram() / (1024 * 1024);
     this->status.clear();
-    this->status.push_back("B=" + String(bat_level) + "%,H=" + String(heap) + "K,PS=" + String(psram) + "M");
+    rtc_date_t RTCDate;
+    M5.RTC.getDate(&RTCDate);
+    rtc_time_t RTCTime;
+    M5.RTC.getTime(&RTCTime);
+    char datebuf[64];
+    snprintf(datebuf, 64, "%04d:%02d:%02d", RTCDate.year, RTCDate.mon, RTCDate.day);
+    char timebuf[64];
+    snprintf(timebuf, 64, "%02d:%02d:%02d", RTCTime.hour, RTCTime.min, RTCTime.sec);
+    this->status.push_back(String(datebuf) + " - " + String(timebuf));
+    this->status.push_back("Batt=" + String(bat_level) + "%,H=" + String(heap) + "K,PS=" + String(psram) + "M");
     if (start_wifi()) {
         auto player = Config.get_active_mpd();
         show_player(player);
         if (this->con.Connect(player.player_ip, player.player_port)) {
-            this->AppendStatus(this->con.GetResponse());
+            this->appendStatus(this->con.GetResponse());
             this->con.GetStatus();
-            this->AppendStatus(this->con.GetResponse());
+            this->appendStatus(this->con.GetResponse());
             this->con.GetCurrentSong();
-            this->AppendStatus(this->con.GetResponse());
+            this->appendStatus(this->con.GetResponse());
             this->con.Disconnect();
-            this->AppendStatus(this->con.GetResponse());
+            this->appendStatus(this->con.GetResponse());
         }
     }
     return this->status;
@@ -92,15 +101,15 @@ MPDStatus& MPD_Client::play_favourite(const FAVOURITE& fav)
         show_player(player);
         this->status.push_back("Play " + String(fav.fav_name));
         if (this->con.Connect(player.player_ip, player.player_port)) {
-            this->AppendStatus(this->con.GetResponse());
+            this->appendStatus(this->con.GetResponse());
             this->con.Clear();
-            this->AppendStatus(this->con.GetResponse());
+            this->appendStatus(this->con.GetResponse());
             this->con.Add_Url(fav.fav_url);
-            this->AppendStatus(this->con.GetResponse());
+            this->appendStatus(this->con.GetResponse());
             this->con.Play();
-            this->AppendStatus(this->con.GetResponse());
+            this->appendStatus(this->con.GetResponse());
             this->con.Disconnect();
-            this->AppendStatus(this->con.GetResponse());
+            this->appendStatus(this->con.GetResponse());
         }
     }
     return this->status;
