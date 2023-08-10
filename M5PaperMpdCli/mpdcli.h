@@ -309,8 +309,9 @@ public:
             return false;
         }
         MpdStatus mpd_status(data);
-        this->status.push_back("MPD status: " + String(mpd_status.getState().c_str()));
-        return true;
+        auto mpdstatus = mpd_status.getState();
+        this->status.push_back("MPD status: " + String(mpdstatus.c_str()));
+        return mpdstatus.compare("play") == 0;
     }
 
     bool IsPlaying()

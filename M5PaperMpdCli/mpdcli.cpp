@@ -117,13 +117,5 @@ MPDStatus& MPD_Client::play_favourite(const FAVOURITE& fav)
 
 bool MPD_Client::is_playing()
 {
-    bool playing = false;
-    if (start_wifi()) {
-        auto player = Config.get_active_mpd();
-        if (this->con.Connect(player.player_ip, player.player_port)) {
-            playing = this->con.IsPlaying();
-            this->con.Disconnect();
-        }
-    }
-    return playing;
+    return this->playing;
 }
