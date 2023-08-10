@@ -9,7 +9,8 @@
 
 M5EPD_Canvas canvas(&M5.EPD);
 
-bool restartByRTC = false;
+static bool restartByRTC = false;
+static bool is_playing = false;
 
 void setup()
 {
@@ -51,6 +52,7 @@ void setup()
     y += 40;
     canvas.drawString("Config loaded", x, y);
     y += 40;
+    canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
     if (!start_wifi()) {
         tft_println("Can't start WIFI");
         canvas.drawString("No WIFI connection", x, y);
@@ -61,6 +63,7 @@ void setup()
         M5.shutdown(1);
     }
     canvas.drawString("Wifi connected", x, y);
+    y += 40;
     canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
     if (!restartByRTC) {
         // get network config
@@ -75,9 +78,9 @@ void setup()
         struct tm timeInfo;
         if (!getLocalTime(&timeInfo)) {
             canvas.drawString("Could not obtain time info", x, y);
+            y += 40;
             canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
             vTaskDelay(3000);
-            y += 40;
         }
         rtc_time_t time_struct;
         time_struct.hour = timeInfo.tm_hour;
@@ -104,13 +107,9 @@ void setup()
     else
         canvas.drawString("Power on by PWR Btn/USB", x, y);
     y += 40;
-    canvas.drawString("Press BtnR for sleep!", x, y);
-    y += 40;
-    canvas.drawString("Press BtnL for shutdown!", x, y);
-    y += 40;
-    canvas.drawString("Wakeup after 60 seconds!", x, y);
     canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
     auto res = mpd.show_mpd_status();
+    stop_wifi();
     canvas.clear();
     x = 20;
     y = 10;
@@ -119,7 +118,6 @@ void setup()
         y += 40;
     }
     canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
-    stop_wifi();
 }
 
 void loop()
@@ -136,15 +134,30 @@ void loop()
         M5.disableMainPower();
         esp_deep_sleep(60100000L);
     }
-    canvas.drawString("sleeping...", 20, 550);
+    int sleep_time = 60;
+    if (mpd.is_playing()) {
+        canvas.drawString("Sleeping 1 minute", 20, 550);
+    } else {
+        rtc_time_t RTCTime;
+        M5.RTC.getTime(&RTCTime);
+        if (RTCTime.hour > 7) {
+            // daytime
+            canvas.drawString("Sleeping 10 minutes", 20, 550);
+            sleep_time = 600;
+        } else {
+            // nighttime
+            canvas.drawString("Sleeping 1 hour", 20, 550);
+            sleep_time = 3600;
+        }
+    }
     canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
     vTaskDelay(250);
     // this only disables MainPower, a NO-OP when on USB power
-    M5.shutdown(60); // shut down now and wake up after 60 seconds if on battery
+    M5.shutdown(sleep_time); // shut down now and wake up after 60 seconds if on battery
     // in case of USB power present: save power and wait for external RTC wakeup
     M5.disableEPDPower(); // digitalWrite(M5EPD_EPD_PWR_EN_PIN, 0);
     M5.disableEXTPower(); // digitalWrite(M5EPD_EXT_PWR_EN_PIN, 0);
-    esp_deep_sleep(60100000L);
+    esp_deep_sleep((long)sleep_time * 1000000L);
     M5.update();
     vTaskDelay(100);
 }

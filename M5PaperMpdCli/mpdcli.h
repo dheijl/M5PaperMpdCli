@@ -417,6 +417,7 @@ private:
     MpdConnection con;
     MPDStatus& show_player(MPD_PLAYER& player);
     MPDStatus status;
+    bool playing;
     void appendStatus(MPDStatus& response)
     {
         for (auto line : response) {
@@ -433,9 +434,14 @@ private:
     }
 
 public:
+    MPD_Client()
+        : playing(false)
+    {
+    }
     MPDStatus& show_mpd_status();
     MPDStatus& toggle_mpd_status();
     MPDStatus& play_favourite(const FAVOURITE& fav);
+    bool is_playing();
 };
 
 extern MPD_Client& mpd;

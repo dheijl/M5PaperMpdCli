@@ -82,7 +82,7 @@ MPDStatus& MPD_Client::show_mpd_status()
         show_player(player);
         if (this->con.Connect(player.player_ip, player.player_port)) {
             this->appendStatus(this->con.GetResponse());
-            this->con.GetStatus();
+            this->playing = this->con.GetStatus();
             this->appendStatus(this->con.GetResponse());
             this->con.GetCurrentSong();
             this->appendStatus(this->con.GetResponse());
@@ -113,4 +113,17 @@ MPDStatus& MPD_Client::play_favourite(const FAVOURITE& fav)
         }
     }
     return this->status;
+}
+
+bool MPD_Client::is_playing()
+{
+    bool playing = false;
+    if (start_wifi()) {
+        auto player = Config.get_active_mpd();
+        if (this->con.Connect(player.player_ip, player.player_port)) {
+            playing = this->con.IsPlaying();
+            this->con.Disconnect();
+        }
+    }
+    return playing;
 }
