@@ -25,10 +25,10 @@ void setup()
     // check reboot reason flag: TIE (timer int enable) && TF (timer flag active)
     if ((reason & 0b0000101) == 0b0000101) {
         restartByRTC = true;
-        Serial.println("Reboot by RTC");
+        DPRINT("Reboot by RTC");
     } else {
         restartByRTC = false;
-        Serial.println("Reboot by power button / USB");
+        DPRINT("Reboot by power button / USB");
     }
     // init EPD
     M5.EPD.SetRotation(90);
@@ -93,6 +93,9 @@ void setup()
         date_struct.day = timeInfo.tm_mday;
         date_struct.year = timeInfo.tm_year + 1900;
         M5.RTC.setDate(&date_struct);
+        canvas.drawString("RTC time synced with NTP", x, y);
+        y += 40;
+        canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
     }
 
     // compute battery percentage, >= 99% = on usb power, less = on battery
@@ -152,12 +155,13 @@ void loop()
     }
     canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
     vTaskDelay(250);
-    // this only disables MainPower, a NO-OP when on USB power
-    M5.shutdown(sleep_time); // shut down now and wake up after 60 seconds if on battery
+    // shut down now and wake up after sleep_time seconds (if on battery)
+    // this only disables MainPower, but is a NO-OP when on USB power
+    M5.shutdown(sleep_time); 
     // in case of USB power present: save power and wait for external RTC wakeup
     M5.disableEPDPower(); // digitalWrite(M5EPD_EPD_PWR_EN_PIN, 0);
     M5.disableEXTPower(); // digitalWrite(M5EPD_EXT_PWR_EN_PIN, 0);
-    esp_deep_sleep((long)sleep_time * 1000000L);
+    esp_deep_sleep((long)(sleep_time + 1) * 1000000L);
     M5.update();
     vTaskDelay(100);
 }
