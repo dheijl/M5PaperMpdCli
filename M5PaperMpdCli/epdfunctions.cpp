@@ -1,5 +1,6 @@
 #include <M5EPD.h>
 
+#include "config.h"
 #include "epdfunctions.h"
 
 static M5EPD_Canvas topline(&M5.EPD); // 0 - 40
@@ -26,6 +27,7 @@ void epd_init()
 
 void epd_print_topline(const String& s)
 {
+    DPRINT(s);
     topline.clear();
     topline.drawString(s, 10, 10);
     topline.pushCanvas(0, 0, UPDATE_MODE_DU4);
@@ -36,6 +38,7 @@ void epd_print_canvas(const StatusLines& sl)
     canvas.clear();
     int x = 10, y = 10;
     for (auto line : sl) {
+        DPRINT(line);
         canvas.drawString(line, x, y);
         y += 40;
     }
@@ -44,6 +47,7 @@ void epd_print_canvas(const StatusLines& sl)
 
 void epd_print_bottomline(const String& s)
 {
+    DPRINT(s);
     bottomline.clear();
     bottomline.drawString(s, 10, 0);
     bottomline.pushCanvas(0, 910, UPDATE_MODE_DU4);
