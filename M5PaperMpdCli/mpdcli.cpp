@@ -20,7 +20,6 @@
 #include "config.h"
 
 #include "mpdcli.h"
-#include "tftfunctions.h"
 #include "wifi.h"
 
 #include <M5EPD.h>

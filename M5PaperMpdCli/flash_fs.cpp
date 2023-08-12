@@ -19,7 +19,7 @@
 
 #include "flash_fs.h"
 
-#include "tftfunctions.h"
+#include "epdfunctions.h"
 #include "utils.h"
 
 #include <M5EPD.h>
@@ -38,7 +38,7 @@ bool NVS_Config::write_wifi(const NETWORK_CFG& nw_cfg)
     Preferences prefs;
     bool result = false;
     if (!prefs.begin(NVS_WIFI, false)) {
-        tft_println_error("wifi prefs begin error");
+        epd_print_topline("wifi prefs begin error");
         prefs.end();
         vTaskDelay(2000);
         return result;
@@ -51,7 +51,7 @@ bool NVS_Config::write_wifi(const NETWORK_CFG& nw_cfg)
     result = prefs.putString("ntp_server", nw_cfg.ntp_server) > 0;
     result = prefs.putString("tz", nw_cfg.tz) > 0;
     if (!result) {
-        tft_println_error("wifi prefs put error");
+        epd_print_topline("wifi prefs put error");
         vTaskDelay(2000);
     }
     prefs.end();
@@ -62,7 +62,7 @@ bool NVS_Config::read_wifi(NETWORK_CFG& nw_cfg)
 {
     Preferences prefs;
     if (!prefs.begin(NVS_WIFI, true)) {
-        tft_println_error("wifi prefs begin error");
+        epd_print_topline("wifi prefs begin error");
         prefs.end();
         vTaskDelay(2000);
         return false;
@@ -74,11 +74,11 @@ bool NVS_Config::read_wifi(NETWORK_CFG& nw_cfg)
     prefs.end();
     DPRINT(ssid + "|" + psw);
     if (ssid.isEmpty() || psw.isEmpty()) {
-        tft_println_error("empty wifi prefs!");
+        epd_print_topline("empty wifi prefs!");
         return false;
     }
     if (ntp_server.isEmpty() || tz.isEmpty()) {
-        tft_println_error("empty NTP prefs!");
+        epd_print_topline("empty NTP prefs!");
         return false;
     }
     nw_cfg.ssid = strdup(ssid.c_str());
@@ -95,7 +95,7 @@ bool NVS_Config::write_players(const PLAYERS& players)
     Preferences prefs;
     bool result = false;
     if (!prefs.begin(NVS_PLAYERS, false)) {
-        tft_println_error("players prefs begin error");
+        epd_print_topline("players prefs begin error");
         prefs.end();
         vTaskDelay(2000);
         return result;
@@ -108,7 +108,7 @@ bool NVS_Config::write_players(const PLAYERS& players)
         String data = String(pl->player_name) + "|" + String(pl->player_ip) + "|" + String(std::to_string(pl->player_port).c_str());
         if (prefs.putString(key.c_str(), data) == 0) {
             result = false;
-            tft_println_error("players prefs put error");
+            epd_print_topline("players prefs put error");
             vTaskDelay(2000);
             break;
         }
@@ -116,7 +116,7 @@ bool NVS_Config::write_players(const PLAYERS& players)
         ++i;
     }
     prefs.end();
-    tft_println("Saved " + String(i) + "players");
+    epd_print_topline("Saved " + String(i) + "players");
     return result;
 }
 
@@ -125,7 +125,7 @@ bool NVS_Config::read_players(PLAYERS& players)
     Preferences prefs;
     bool result = false;
     if (!prefs.begin(NVS_PLAYERS, true)) {
-        tft_println_error("players prefs begin error");
+        epd_print_topline("players prefs begin error");
         prefs.end();
         vTaskDelay(2000);
         return result;
@@ -144,7 +144,7 @@ bool NVS_Config::read_players(PLAYERS& players)
                 mpd->player_ip = strdup(parts[1].c_str());
                 mpd->player_port = stoi(parts[2]);
                 players.push_back(mpd);
-                tft_println(String(mpd->player_name) + " " + String(mpd->player_ip) + ":" + String(mpd->player_port));
+                epd_print_topline(String(mpd->player_name) + " " + String(mpd->player_ip) + ":" + String(mpd->player_port));
             }
         }
         DPRINT(pl);
@@ -154,7 +154,7 @@ bool NVS_Config::read_players(PLAYERS& players)
         result = true;
     }
     prefs.end();
-    tft_println_highlight("Loaded " + String(i) + " players");
+    epd_print_topline("Loaded " + String(i) + " players");
     return result;
 }
 
@@ -163,7 +163,7 @@ bool NVS_Config::write_favourites(const FAVOURITES& favourites)
     Preferences prefs;
     bool result = false;
     if (!prefs.begin("favs", false)) {
-        tft_println_error("favs prefs begin error");
+        epd_print_topline("favs prefs begin error");
         prefs.end();
         vTaskDelay(2000);
         return result;
@@ -176,7 +176,7 @@ bool NVS_Config::write_favourites(const FAVOURITES& favourites)
         String data = String(f->fav_name) + "|" + String(f->fav_url);
         if (prefs.putString(key.c_str(), data) == 0) {
             result = false;
-            tft_println_error("favs prefs put error");
+            epd_print_topline("favs prefs put error");
             vTaskDelay(2000);
             break;
         }
@@ -184,7 +184,7 @@ bool NVS_Config::write_favourites(const FAVOURITES& favourites)
         ++i;
     }
     prefs.end();
-    tft_println("Saved " + String(i) + "favourites");
+    epd_print_topline("Saved " + String(i) + "favourites");
     return result;
 }
 
@@ -193,7 +193,7 @@ bool NVS_Config::read_favourites(FAVOURITES& favourites)
     Preferences prefs;
     bool result = false;
     if (!prefs.begin("favs", true)) {
-        tft_println_error("favs prefs begin error");
+        epd_print_topline("favs prefs begin error");
         prefs.end();
         vTaskDelay(2000);
         return result;
@@ -219,7 +219,7 @@ bool NVS_Config::read_favourites(FAVOURITES& favourites)
         result = true;
     }
     prefs.end();
-    tft_println_highlight("Loaded " + String(favourites.size()) + " favourites");
+    epd_print_topline("Loaded " + String(favourites.size()) + " favourites");
     return result;
 }
 
@@ -227,7 +227,7 @@ void NVS_Config::write_player_index(uint16_t new_pl)
 {
     Preferences prefs;
     if (!prefs.begin(NVS_CUR_MPD, false)) {
-        tft_println_error("cur_mpd prefs begin error");
+        epd_print_topline("cur_mpd prefs begin error");
         prefs.end();
         vTaskDelay(2000);
         return;
@@ -236,7 +236,7 @@ void NVS_Config::write_player_index(uint16_t new_pl)
     Config.set_player_index(new_pl);
     bool result = prefs.putUShort("cur_mpd", new_pl) > 0;
     if (!result) {
-        tft_println_error("cur_mpd prefs put error");
+        epd_print_topline("cur_mpd prefs put error");
         vTaskDelay(2000);
     }
     prefs.end();
@@ -247,7 +247,7 @@ bool NVS_Config::read_player_index()
     Preferences prefs;
     if (!prefs.begin(NVS_CUR_MPD, true)) {
         prefs.end();
-        tft_println_highlight("No cur_mpd prefs!");
+        epd_print_topline("No cur_mpd prefs!");
         write_player_index(0);
         Config.set_player_index(0);
         return true;

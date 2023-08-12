@@ -6,7 +6,6 @@
 #include "epdfunctions.h"
 #include "mpdcli.h"
 #include "synctime.h"
-#include "tftfunctions.h"
 #include "wifi.h"
 
 M5EPD_Canvas topline(&M5.EPD); // 0 - 40
@@ -60,14 +59,14 @@ void setup()
     int v = (int)(((float)bat_volt / 1.05f) * 100);
     String b = v >= 99 ? " USB powered." : " on battery.";
     epd_print_topline("B: " + String(v) + "%" + b);
+    auto res = mpd.show_mpd_status();
+    stop_wifi();
+    epd_print_canvas(res);
     if (restartByRTC) {
         epd_print_topline("Power on by RTC timer");
     } else {
         epd_print_topline("Power on by PWR Btn/USB");
     }
-    auto res = mpd.show_mpd_status();
-    stop_wifi();
-    epd_print_canvas(res);
     int sleep_time = 60;
     String sleep_msg = "";
     if (mpd.is_playing()) {

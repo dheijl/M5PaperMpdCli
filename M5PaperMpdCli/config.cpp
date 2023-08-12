@@ -19,9 +19,9 @@
 
 #include "config.h"
 
+#include "epdfunctions.h"
 #include "flash_fs.h"
 #include "sdcard_fs.h"
-#include "tftfunctions.h"
 #include "utils.h"
 
 static Configuration config;
@@ -35,9 +35,9 @@ bool Configuration::load_config()
 {
     if (this->load_SD_config()) {
         if (this->save_FLASH_config()) {
-            tft_println("Configuration saved to FLASH");
+            epd_print_topline("Configuration saved to FLASH");
         } else {
-            tft_println_error("Error saving to FLASH");
+            epd_print_topline("Error saving to FLASH");
         }
     } else {
         if (!this->load_FLASH_config()) {
@@ -74,8 +74,7 @@ const FAVOURITES& Configuration::getFavourites()
 
 bool Configuration::load_SD_config()
 {
-    tft_clear();
-    tft_println("Check SD config");
+    epd_print_topline("Check SD config");
     if (SD_Config::read_wifi(this->nw_cfg)
         && SD_Config::read_players(this->mpd_players)
         && SD_Config::read_favourites(this->favourites)) {
@@ -87,7 +86,7 @@ bool Configuration::load_SD_config()
 
 bool Configuration::load_FLASH_config()
 {
-    tft_println("Load FLASH config");
+    epd_print_topline("Load FLASH config");
     if (NVS_Config::read_wifi(this->nw_cfg)
         && NVS_Config::read_players(this->mpd_players)
         && NVS_Config::read_favourites(this->favourites)
@@ -100,8 +99,7 @@ bool Configuration::load_FLASH_config()
 
 bool Configuration::save_FLASH_config()
 {
-    tft_clear();
-    tft_println("Save FLASH config");
+    epd_print_topline("Save FLASH config");
     if (NVS_Config::write_wifi(this->nw_cfg)
         && NVS_Config::write_players(this->mpd_players)
         && NVS_Config::write_favourites(this->favourites)) {

@@ -19,8 +19,8 @@
 
 #include "config.h"
 
+#include "epdfunctions.h"
 #include "sdcard_fs.h"
-#include "tftfunctions.h"
 #include "utils.h"
 
 #include <SD.h>
@@ -38,14 +38,14 @@ bool SD_Config::read_wifi(NETWORK_CFG& nw_cfg)
         SD.end();
         return result;
     }
-    tft_println_highlight("SD card present!");
+    epd_print_topline("SD card present!");
     vTaskDelay(50);
-    tft_println_highlight("Loading wifi");
+    epd_print_topline("Loading wifi");
     File wifif = SD.open("/wifi.txt", FILE_READ);
     if (wifif) {
         result = parse_wifi_file(wifif, nw_cfg);
     } else {
-        tft_println_error("error reading wifi.txt");
+        epd_print_topline("error reading wifi.txt");
         vTaskDelay(1000);
     }
     SD.end();
@@ -59,12 +59,12 @@ bool SD_Config::read_players(PLAYERS& players)
         SD.end();
         return result;
     }
-    tft_println_highlight("Loading players");
+    epd_print_topline("Loading players");
     File plf = SD.open("/players.txt", FILE_READ);
     if (plf) {
         result = parse_players_file(plf, players);
     } else {
-        tft_println_error("error reading players.txt");
+        epd_print_topline("error reading players.txt");
         vTaskDelay(1000);
     }
 
@@ -79,12 +79,12 @@ bool SD_Config::read_favourites(FAVOURITES& favourites)
         SD.end();
         return result;
     }
-    tft_println_highlight("Loading favourites");
+    epd_print_topline("Loading favourites");
     File favf = SD.open("/favs.txt", FILE_READ);
     if (favf) {
         result = parse_favs_file(favf, favourites);
     } else {
-        tft_println_error("error reading favs.txt");
+        epd_print_topline("error reading favs.txt");
         vTaskDelay(1000);
     }
 
@@ -96,7 +96,7 @@ bool SD_Config::parse_wifi_file(File wifif, NETWORK_CFG& nw_cfg)
 {
     bool have_ntp = false;
     bool have_wifi = false;
-    tft_println("Parsing WiFi ssid/psw");
+    epd_print_topline("Parsing WiFi ssid/psw");
     while (wifif.available()) {
         String line = wifif.readStringUntil('\n');
         line.trim();
@@ -130,7 +130,7 @@ bool SD_Config::parse_wifi_file(File wifif, NETWORK_CFG& nw_cfg)
 bool SD_Config::parse_players_file(File plf, PLAYERS& players)
 {
     bool result = false;
-    tft_println("Parsing players:");
+    epd_print_topline("Parsing players:");
     while (plf.available() && (players.size() <= 5)) { // max 5 players
         String line = plf.readStringUntil('\n');
         line.trim();
@@ -144,7 +144,7 @@ bool SD_Config::parse_players_file(File plf, PLAYERS& players)
                 mpd->player_ip = strdup(parts[1].c_str());
                 mpd->player_port = stoi(parts[2]);
                 players.push_back(mpd);
-                tft_println(String(mpd->player_name) + " " + String(mpd->player_ip) + ":" + String(mpd->player_port));
+                epd_print_topline(String(mpd->player_name) + " " + String(mpd->player_ip) + ":" + String(mpd->player_port));
             }
         }
     }
@@ -152,7 +152,7 @@ bool SD_Config::parse_players_file(File plf, PLAYERS& players)
     if (players.size() > 0) {
         result = true;
     } else {
-        tft_println("No players!");
+        epd_print_topline("No players!");
     }
     return result;
 }
@@ -160,7 +160,7 @@ bool SD_Config::parse_players_file(File plf, PLAYERS& players)
 bool SD_Config::parse_favs_file(File favf, FAVOURITES& favourites)
 {
     bool result = false;
-    tft_println("Parsing favourites");
+    epd_print_topline("Parsing favourites");
     while (favf.available() && favourites.size() <= 50) { // max 50
         String line = favf.readStringUntil('\n');
         line.trim();
@@ -178,10 +178,10 @@ bool SD_Config::parse_favs_file(File favf, FAVOURITES& favourites)
     }
     favf.close();
     if (favourites.size() > 0) {
-        tft_println("Loaded " + String(favourites.size()) + " favourites");
+        epd_print_topline("Loaded " + String(favourites.size()) + " favourites");
         result = true;
     } else {
-        tft_println("No favourites!");
+        epd_print_topline("No favourites!");
     }
     return result;
 }

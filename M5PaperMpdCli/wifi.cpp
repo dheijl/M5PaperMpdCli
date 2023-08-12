@@ -1,5 +1,5 @@
 #include "wifi.h"
-#include "tftfunctions.h"
+#include "epdfunctions.h"
 
 #include <M5EPD.h>
 #include <WiFi.h>
@@ -22,7 +22,7 @@ bool start_wifi()
     // Turn on WiFi
     WiFi.disconnect();
     WiFi.softAPdisconnect(true);
-    tft_println("Connecting wifi...");
+    epd_print_topline("Connecting wifi...");
     WiFi.mode(WIFI_STA);
     auto ap = Config.getNW_CFG();
     WiFi.begin(ap.ssid, ap.psw);
@@ -40,8 +40,7 @@ bool start_wifi()
 
 void stop_wifi()
 {
-    tft_println("Disconnect Wifi");
+    epd_print_topline("Disconnect Wifi");
     WiFi.disconnect();
     have_wifi = false;
-    tft_clear();
 }

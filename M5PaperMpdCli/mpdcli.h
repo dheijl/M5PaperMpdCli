@@ -29,7 +29,6 @@
 #include <WifiClient.h>
 
 #include "epdfunctions.h"
-#include "tftfunctions.h"
 
 using std::string;
 using std::vector;
@@ -400,7 +399,7 @@ public:
         string add_cmd(MPD_ADD);
         int pos = add_cmd.find("{}");
         add_cmd.replace(pos, 2, url);
-        tft_println(add_cmd.c_str());
+        epd_print_topline(add_cmd.c_str());
         Client.write(add_cmd.c_str(), add_cmd.length());
         string data = read_data();
         if (data.length() == 0) {
