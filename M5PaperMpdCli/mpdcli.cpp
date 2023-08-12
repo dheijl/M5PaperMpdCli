@@ -28,13 +28,13 @@
 static MPD_Client _mpd;
 MPD_Client& mpd = _mpd;
 
-MPDStatus& MPD_Client::show_player(MPD_PLAYER& player)
+StatusLines& MPD_Client::show_player(MPD_PLAYER& player)
 {
     this->status.push_back("Player: " + String(player.player_name));
     return status;
 }
 
-MPDStatus& MPD_Client::toggle_mpd_status()
+StatusLines& MPD_Client::toggle_mpd_status()
 {
     if (start_wifi()) {
         auto player = Config.get_active_mpd();
@@ -60,7 +60,7 @@ MPDStatus& MPD_Client::toggle_mpd_status()
     }
 }
 
-MPDStatus& MPD_Client::show_mpd_status()
+StatusLines& MPD_Client::show_mpd_status()
 {
     float bat_volt = (float)(M5.getBatteryVoltage() - 3200) / 1000.0f;
     int bat_level = (int)(((float)bat_volt / 1.05f) * 100);
@@ -93,7 +93,7 @@ MPDStatus& MPD_Client::show_mpd_status()
     return this->status;
 }
 
-MPDStatus& MPD_Client::play_favourite(const FAVOURITE& fav)
+StatusLines& MPD_Client::play_favourite(const FAVOURITE& fav)
 {
     if (start_wifi()) {
         this->status.clear();

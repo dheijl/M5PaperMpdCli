@@ -28,6 +28,7 @@
 #include <WiFi.h>
 #include <WifiClient.h>
 
+#include "epdfunctions.h"
 #include "tftfunctions.h"
 
 using std::string;
@@ -54,8 +55,6 @@ enum MpdResponseKind {
     MpdCommandType,
     MpdFailureKind,
 };
-
-typedef vector<String> MPDStatus;
 
 class MpdResponse {
 private:
@@ -241,7 +240,7 @@ public:
 class MpdConnection {
 private:
     WiFiClient Client;
-    MPDStatus status;
+    StatusLines status;
     string read_data()
     {
         int n = 5000;
@@ -267,7 +266,7 @@ private:
 
 protected:
 public:
-    MPDStatus& GetResponse()
+    StatusLines& GetResponse()
     {
         return this->status;
     }
@@ -416,10 +415,10 @@ public:
 class MPD_Client {
 private:
     MpdConnection con;
-    MPDStatus& show_player(MPD_PLAYER& player);
-    MPDStatus status;
+    StatusLines& show_player(MPD_PLAYER& player);
+    StatusLines status;
     bool playing;
-    void appendStatus(MPDStatus& response)
+    void appendStatus(StatusLines& response)
     {
         for (auto line : response) {
             int p = line.indexOf(" - ");
@@ -439,9 +438,9 @@ public:
         : playing(false)
     {
     }
-    MPDStatus& show_mpd_status();
-    MPDStatus& toggle_mpd_status();
-    MPDStatus& play_favourite(const FAVOURITE& fav);
+    StatusLines& show_mpd_status();
+    StatusLines& toggle_mpd_status();
+    StatusLines& play_favourite(const FAVOURITE& fav);
     bool is_playing();
 };
 

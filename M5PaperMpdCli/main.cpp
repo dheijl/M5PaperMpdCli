@@ -3,6 +3,7 @@
 #include <M5EPD.h>
 
 #include "config.h"
+#include "epdfunctions.h"
 #include "mpdcli.h"
 #include "tftfunctions.h"
 #include "wifi.h"
@@ -22,8 +23,8 @@ void setup()
     //  which calls RTC.begin() which clears the timer flag.
     Wire.begin(21, 22);
     uint8_t reason = M5.RTC.readReg(0x01);
-    // now it's safe
-    M5.begin();
+    // now it's safe to start M5EPD
+    M5.begin(true, true, true, true, false);
     // check reboot reason flag: TIE (timer int enable) && TF (timer flag active)
     if ((reason & 0b0000101) == 0b0000101) {
         restartByRTC = true;
@@ -32,45 +33,25 @@ void setup()
         restartByRTC = false;
         DPRINT("Reboot by power button / USB");
     }
-    // init EPD
-    M5.EPD.SetRotation(90);
-    M5.TP.SetRotation(90);
-    M5.EPD.Clear(true);
-    // enable external BM8563 RTC
-    M5.RTC.begin();
-    // create canvas
-    topline.createCanvas(540, 40);
-    topline.setTextSize(3);
-    topline.clear();
-    canvas.createCanvas(540, 880);
-    canvas.setTextSize(3);
-    canvas.clear();
-    bottomline.createCanvas(540, 40);
-    bottomline.setTextSize(3);
-    bottomline.clear();
-    int x = 10;
-    int y = 10;
+    epd_init();
     // try to load configuration from flash or SD
     while (!Config.load_config()) {
         DPRINT("Missing  config!!");
-        topline.drawString("No NVS-Config or SD-CONFIG", x, y);
-        topline.pushCanvas(0, 0, UPDATE_MODE_DU4);
+        epd_print_topline("No NVS-Config or SD-CONFIG");
         vTaskDelay(3000);
     }
-    topline.drawString("Config loaded", x, y);
-    topline.pushCanvas(0, 0, UPDATE_MODE_DU4);
+    epd_print_topline("Config loaded");
     if (!start_wifi()) {
         DPRINT("Can't start WIFI");
-        topline.clear();
-        topline.drawString("No WIFI connection", x, y);
-        topline.pushCanvas(0, 0, UPDATE_MODE_DU4);
+        epd_print_topline("No WIFI connection");
         stop_wifi();
         vTaskDelay(2000);
         M5.shutdown(1);
     }
-    topline.clear();
-    topline.drawString("Wifi connected", x, y);
-    topline.pushCanvas(0, 0, UPDATE_MODE_DU4);
+    epd_print_topline("Wifi connected");
+    // enable external BM8563 RTC
+    M5.RTC.begin();
+    // sync time with NTP if not RTC wake-up
     if (!restartByRTC) {
         // get network config
         auto cfg = Config.getNW_CFG();
@@ -83,9 +64,7 @@ void setup()
         tzset();
         struct tm timeInfo;
         if (!getLocalTime(&timeInfo)) {
-            topline.clear();
-            topline.drawString("Could not obtain time info", x, y);
-            topline.pushCanvas(0, 0, UPDATE_MODE_DU4);
+            epd_print_topline("Could not obtain time info");
             vTaskDelay(2000);
         } else {
             rtc_time_t time_struct;
@@ -99,9 +78,7 @@ void setup()
             date_struct.day = timeInfo.tm_mday;
             date_struct.year = timeInfo.tm_year + 1900;
             M5.RTC.setDate(&date_struct);
-            topline.clear();
-            topline.drawString("RTC time synced with NTP", x, y);
-            topline.pushCanvas(0, 0, UPDATE_MODE_DU4);
+            epd_print_topline("RTC time synced with NTP");
         }
     }
 
@@ -109,31 +86,15 @@ void setup()
     float bat_volt = (float)(M5.getBatteryVoltage() - 3200) / 1000.0f;
     int v = (int)(((float)bat_volt / 1.05f) * 100);
     String b = v >= 99 ? " USB powered." : " on battery.";
-    topline.clear();
-    topline.drawString("B: " + String(v) + "%" + b, x, y);
-    topline.pushCanvas(0, 0, UPDATE_MODE_DU4);
-    topline.clear();
+    epd_print_topline("B: " + String(v) + "%" + b);
     if (restartByRTC) {
-        topline.drawString("Power on by RTC timer", x, y);
+        epd_print_topline("Power on by RTC timer");
     } else {
-        topline.drawString("Power on by PWR Btn/USB", x, y);
+        epd_print_topline("Power on by PWR Btn/USB");
     }
-    topline.pushCanvas(0, 0, UPDATE_MODE_DU4);
     auto res = mpd.show_mpd_status();
     stop_wifi();
-    canvas.clear();
-    x = 10;
-    y = 10;
-    for (auto line : res) {
-        canvas.drawString(line, x, y);
-        y += 40;
-    }
-    canvas.pushCanvas(0, 40, UPDATE_MODE_DU4);
-}
-
-void loop()
-{
-    bottomline.clear();
+    epd_print_canvas(res);
     int sleep_time = 60;
     String sleep_msg = "";
     if (mpd.is_playing()) {
@@ -151,8 +112,7 @@ void loop()
             sleep_time = 3600;
         }
     }
-    bottomline.drawString(sleep_msg, 10, 0);
-    bottomline.pushCanvas(0, 910, UPDATE_MODE_DU4);
+    epd_print_bottomline(sleep_msg);
     vTaskDelay(250);
     // shut down now and wake up after sleep_time seconds (if on battery)
     // this only disables MainPower, but is a NO-OP when on USB power
@@ -161,6 +121,10 @@ void loop()
     M5.disableEPDPower(); // digitalWrite(M5EPD_EPD_PWR_EN_PIN, 0);
     M5.disableEXTPower(); // digitalWrite(M5EPD_EXT_PWR_EN_PIN, 0);
     esp_deep_sleep((long)(sleep_time + 1) * 1000000L);
+}
+
+void loop()
+{
     M5.update();
     vTaskDelay(100);
 }
