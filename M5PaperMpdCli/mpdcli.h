@@ -414,9 +414,9 @@ public:
 class MPD_Client {
 private:
     MpdConnection con;
-    StatusLines& show_player(MPD_PLAYER& player);
     StatusLines status;
     bool playing;
+    String show_player(MPD_PLAYER& player);
     void appendStatus(StatusLines& response)
     {
         for (auto line : response) {

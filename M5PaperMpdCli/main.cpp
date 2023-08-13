@@ -6,6 +6,7 @@
 #include "epdfunctions.h"
 #include "mpdcli.h"
 #include "synctime.h"
+#include "utils.h"
 #include "wifi.h"
 
 M5EPD_Canvas topline(&M5.EPD); // 0 - 40
@@ -14,6 +15,7 @@ M5EPD_Canvas bottomline(&M5.EPD); // 920 - 40
 
 static bool restartByRTC = false;
 static bool is_playing = false;
+static int time_out = 0;
 
 void setup()
 {
@@ -37,14 +39,15 @@ void setup()
     // try to load configuration from flash or SD
     while (!Config.load_config()) {
         epd_print_topline("No NVS-Config or SD-CONFIG");
-        vTaskDelay(3000);
+        vTaskDelay(200);
+        M5.shutdown(3600);
     }
     epd_print_topline("Config loaded");
     if (!start_wifi()) {
         epd_print_topline("No WIFI connection");
         stop_wifi();
-        vTaskDelay(2000);
-        M5.shutdown(1);
+        vTaskDelay(200);
+        M5.shutdown(3600);
     }
     epd_print_topline("Wifi connected");
     // enable external BM8563 RTC
@@ -53,64 +56,29 @@ void setup()
     if (!restartByRTC) {
         sync_time();
     }
-
-    // compute battery percentage, >= 99% = on usb power, less = on battery
-    float bat_volt = (float)(M5.getBatteryVoltage() - 3200) / 1000.0f;
-    int v = (int)(((float)bat_volt / 1.05f) * 100);
-    String b = v >= 99 ? " USB powered." : " on battery.";
-    epd_print_topline("B: " + String(v) + "%" + b);
+    on_battery ? " on battery." : " USB powered.";
     auto res = mpd.show_mpd_status();
     stop_wifi();
     epd_print_canvas(res);
     if (restartByRTC) {
         epd_print_topline("Power on by RTC timer");
+        sleep_and_wake();
     } else {
         epd_print_topline("Power on by PWR Btn/USB");
+        epd_print_bottomline("Press any button for Menu");
     }
-    int sleep_time = 60;
-    String sleep_msg = "";
-    if (mpd.is_playing()) {
-        sleep_msg = "Sleeping for 1 minute";
-    } else {
-        rtc_time_t RTCTime;
-        M5.RTC.getTime(&RTCTime);
-        if (RTCTime.hour > 7) {
-            // daytime
-            sleep_msg = "Sleeping for 10 minutes";
-            sleep_time = 600;
-        } else {
-            // nighttime
-            sleep_msg = "Sleeping for 1 hour";
-            sleep_time = 3600;
-        }
-    }
-    epd_print_bottomline(sleep_msg);
-    vTaskDelay(250);
-    // shut down now and wake up after sleep_time seconds (if on battery)
-    // this only disables MainPower, but is a NO-OP when on USB power
-    M5.shutdown(sleep_time);
-    // in case of USB power present: save power and wait for external RTC wakeup
-    M5.disableEPDPower(); // digitalWrite(M5EPD_EPD_PWR_EN_PIN, 0);
-    M5.disableEXTPower(); // digitalWrite(M5EPD_EXT_PWR_EN_PIN, 0);
-    esp_deep_sleep((long)(sleep_time + 1) * 1000000L);
 }
 
 void loop()
 {
+    if (time_out > 50) {
+        sleep_and_wake();
+    }
     M5.update();
+    if (M5.BtnL.wasPressed() || M5.BtnP.wasPressed() || M5.BtnR.wasPressed()) {
+        // show menu
+        epd_print_bottomline("menu activated");
+    }
     vTaskDelay(100);
+    time_out++;
 }
-/*
-if (M5.BtnL.wasPressed()) {
-    // proper shutdown without wake-up (if not on USB power)
-    canvas.drawString("I'm shutting down", 45, 550);
-    canvas.pushCanvas(0, 0, UPDATE_MODE_DU4);
-    vTaskDelay(250);
-    M5.RTC.clearIRQ();
-    M5.RTC.disableIRQ();
-    M5.disableEPDPower(); // digitalWrite(M5EPD_EPD_PWR_EN_PIN, 0);
-    M5.disableEXTPower(); // digitalWrite(M5EPD_EXT_PWR_EN_PIN, 0);
-    M5.disableMainPower();
-    esp_deep_sleep(60100000L);
-}
-*/

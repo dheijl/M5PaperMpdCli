@@ -18,11 +18,15 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #pragma once
-
+#include <Arduino.h>
 #include <string>
 #include <vector>
 
 using std::string;
 using std::vector;
 
+void sleep_and_wake();
+bool on_battery();
+String get_status();
+String get_date_time();
 vector<string> split(const string& s, char delim);

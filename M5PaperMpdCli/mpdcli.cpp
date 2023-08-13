@@ -17,20 +17,19 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include "config.h"
-
-#include "mpdcli.h"
-#include "wifi.h"
-
 #include <M5EPD.h>
+
+#include "config.h"
+#include "mpdcli.h"
+#include "utils.h"
+#include "wifi.h"
 
 static MPD_Client _mpd;
 MPD_Client& mpd = _mpd;
 
-StatusLines& MPD_Client::show_player(MPD_PLAYER& player)
+String MPD_Client::show_player(MPD_PLAYER& player)
 {
-    this->status.push_back("Player: " + String(player.player_name));
-    return status;
+    return ("Player: " + String(player.player_name));
 }
 
 StatusLines& MPD_Client::toggle_mpd_status()
@@ -38,7 +37,7 @@ StatusLines& MPD_Client::toggle_mpd_status()
     if (start_wifi()) {
         auto player = Config.get_active_mpd();
         this->status.clear();
-        show_player(player);
+        this->status.push_back(show_player(player));
         if (this->con.Connect(player.player_ip, player.player_port)) {
             this->appendStatus(this->con.GetResponse());
             if (this->con.IsPlaying()) {
@@ -61,24 +60,12 @@ StatusLines& MPD_Client::toggle_mpd_status()
 
 StatusLines& MPD_Client::show_mpd_status()
 {
-    float bat_volt = (float)(M5.getBatteryVoltage() - 3200) / 1000.0f;
-    int bat_level = (int)(((float)bat_volt / 1.05f) * 100);
-    auto heap = ESP.getFreeHeap() / 1024;
-    auto psram = ESP.getFreePsram() / (1024 * 1024);
     this->status.clear();
-    rtc_date_t RTCDate;
-    M5.RTC.getDate(&RTCDate);
-    rtc_time_t RTCTime;
-    M5.RTC.getTime(&RTCTime);
-    char datebuf[64];
-    snprintf(datebuf, 64, "%04d:%02d:%02d", RTCDate.year, RTCDate.mon, RTCDate.day);
-    char timebuf[64];
-    snprintf(timebuf, 64, "%02d:%02d:%02d", RTCTime.hour, RTCTime.min, RTCTime.sec);
-    this->status.push_back(String(datebuf) + " - " + String(timebuf));
-    this->status.push_back("Batt=" + String(bat_level) + "%,H=" + String(heap) + "K,PS=" + String(psram) + "M");
+    this->status.push_back(get_date_time());
+    this->status.push_back(get_status());
     if (start_wifi()) {
         auto player = Config.get_active_mpd();
-        show_player(player);
+        this->status.push_back(show_player(player));
         if (this->con.Connect(player.player_ip, player.player_port)) {
             this->appendStatus(this->con.GetResponse());
             this->playing = this->con.GetStatus();
@@ -97,7 +84,7 @@ StatusLines& MPD_Client::play_favourite(const FAVOURITE& fav)
     if (start_wifi()) {
         this->status.clear();
         auto player = Config.get_active_mpd();
-        show_player(player);
+        this->status.push_back(show_player(player));
         this->status.push_back("Play " + String(fav.fav_name));
         if (this->con.Connect(player.player_ip, player.player_port)) {
             this->appendStatus(this->con.GetResponse());
