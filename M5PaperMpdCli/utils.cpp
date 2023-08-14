@@ -36,7 +36,7 @@ vector<string> split(const string& s, char delim)
     return result;
 }
 
-void sleep_and_wake()
+void shutdown_and_wake()
 {
     int sleep_time = 60;
     String sleep_msg = "";

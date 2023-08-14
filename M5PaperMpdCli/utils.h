@@ -25,7 +25,7 @@
 using std::string;
 using std::vector;
 
-void sleep_and_wake();
+void shutdown_and_wake();
 bool on_battery();
 String get_status();
 String get_date_time();

@@ -62,7 +62,7 @@ void setup()
     epd_print_canvas(res);
     if (restartByRTC) {
         epd_print_topline("Power on by RTC timer");
-        sleep_and_wake();
+        shutdown_and_wake();
     } else {
         epd_print_topline("Power on by PWR Btn/USB");
         epd_print_bottomline("Press any button for Menu");
@@ -72,7 +72,7 @@ void setup()
 void loop()
 {
     if (time_out > 50) {
-        sleep_and_wake();
+        shutdown_and_wake();
     }
     M5.update();
     if (M5.BtnL.wasPressed() || M5.BtnP.wasPressed() || M5.BtnR.wasPressed()) {
