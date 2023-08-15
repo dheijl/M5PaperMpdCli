@@ -1,13 +1,13 @@
 Radio Delfino|https://nr8.newradio.it/proxy/emaamo00?mp=/stream
-Radio 1 Classics|http://icecast.vrtcdn.be/radio1_classics_high.mp3
+Radio 1 Classics|http://icecast.vrtcdn.be/radio1_classics-high.mp3
 Radio 1|http://icecast.vrtcdn.be/radio1-high.mp3
 Radio 2 OVL|http://icecast.vrtcdn.be/ra2ovl-high.mp3
 Classics 21|https://radio.rtbf.be/c21/mp3-160/me
 Classics 21 Blues|https://radio.rtbf.be/c21-blues/mp3-128/me
 StuBru Tijdloze|http://icecast.vrtcdn.be/stubru_tijdloze-high.mp3
 StuBruhttp://icecast.vrtcdn.be/stubru-high.mp3
-Willy|https://playerservices.streamtheworld.com/api/livestream-redirect/WILLY.mp3
-Willy-class-x|https://icecast-qmusicbe-cdp.triple-it.nl/willy-class-x.mp3
+Willy|https://streams.radio.dpgmedia.cloud/redirect/willy_be/mp3
+Willy-class-x|https://streams.radio.dpgmedia.cloud/redirect/willy_be_class_x/mp3
 R. Paradise Rock|http://stream.radioparadise.com/rock-flacm
 R. Paradise Main|http://stream.radioparadise.com/flacm
 R. Paradise Mellow|http://stream.radioparadise.com/mellow-flacm 
