@@ -80,7 +80,15 @@ String get_status()
     int bat_level = (int)(((float)bat_volt / 1.05f) * 100);
     auto heap = ESP.getFreeHeap() / 1024;
     auto psram = ESP.getFreePsram() / (1024 * 1024);
-    return String("Batt=" + String(bat_level) + "%,H=" + String(heap) + "K,PS=" + String(psram) + "M");
+    M5.SHT30.UpdateData();
+    auto temp = M5.SHT30.GetTemperature();
+    auto hum = M5.SHT30.GetRelHumidity();
+    char stemp[10];
+    char shum[10];
+    dtostrf(temp, 2, 1, stemp);
+    dtostrf(hum, 2, 1, shum);
+
+    return String("B" + String(bat_level) + "%,H" + String(heap) + "K,R" + String(psram) + "M," + "T" + stemp + "C,H" + shum + "%");
 }
 
 String get_date_time()

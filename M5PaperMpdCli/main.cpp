@@ -27,6 +27,7 @@ void setup()
     uint8_t reason = M5.RTC.readReg(0x01);
     // now it's safe to start M5EPD
     M5.begin(true, true, true, true, false);
+    M5.SHT30.Begin();
     // check reboot reason flag: TIE (timer int enable) && TF (timer flag active)
     if ((reason & 0b0000101) == 0b0000101) {
         restartByRTC = true;
