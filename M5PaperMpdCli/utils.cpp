@@ -38,21 +38,22 @@ vector<string> split(const string& s, char delim)
 
 void shutdown_and_wake()
 {
-    int sleep_time = 60;
+    rtc_time_t RTCTime;
+    M5.RTC.getTime(&RTCTime);
+    // sleep time is adjusted to the next minute or hour
+    int sleep_time = 60 - RTCTime.sec;
     String sleep_msg = "";
     if (mpd.is_playing()) {
         sleep_msg = "Sleeping for 1 minute";
     } else {
-        rtc_time_t RTCTime;
-        M5.RTC.getTime(&RTCTime);
         if (RTCTime.hour > 7) {
             // daytime
             sleep_msg = "Sleeping for 10 minutes";
-            sleep_time = 600;
+            sleep_time = 600 - RTCTime.sec;
         } else {
             // nighttime
             sleep_msg = "Sleeping for 1 hour";
-            sleep_time = 3600;
+            sleep_time = 3600 - (RTCTime.min * 60) - RTCTime.sec;
         }
     }
     epd_print_bottomline(sleep_msg);
