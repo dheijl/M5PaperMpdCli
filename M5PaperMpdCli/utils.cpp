@@ -49,7 +49,7 @@ void shutdown_and_wake()
         if (RTCTime.hour > 7) {
             // daytime
             sleep_msg = "Sleeping for 10 minutes";
-            sleep_time = 600 - RTCTime.sec;
+            sleep_time = 600 - ((RTCTime.min % 10) * 60) - RTCTime.sec;
         } else {
             // nighttime
             sleep_msg = "Sleeping for 1 hour";
