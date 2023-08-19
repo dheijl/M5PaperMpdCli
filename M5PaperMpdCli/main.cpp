@@ -56,7 +56,6 @@ void setup()
     if (!restartByRTC) {
         sync_time();
     }
-    on_battery ? " on battery." : " USB powered.";
     auto res = mpd.show_mpd_status();
     stop_wifi();
     epd_print_canvas(res);
