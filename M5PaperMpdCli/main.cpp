@@ -50,7 +50,6 @@ void setup()
         vTaskDelay(200);
         M5.shutdown(3600);
     }
-    epd_print_topline("Wifi connected");
     // enable external BM8563 RTC
     M5.RTC.begin();
     // sync time with NTP if not RTC wake-up

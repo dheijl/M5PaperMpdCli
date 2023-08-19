@@ -35,12 +35,13 @@ bool start_wifi()
         }
         vTaskDelay(50);
     }
+    epd_print_topline("Wifi connected");
     return have_wifi;
 }
 
 void stop_wifi()
 {
-    epd_print_topline("Disconnect Wifi");
     WiFi.disconnect();
+    epd_print_topline("Wifi disconnected");
     have_wifi = false;
 }
