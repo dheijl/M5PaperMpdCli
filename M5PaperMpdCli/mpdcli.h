@@ -423,9 +423,12 @@ private:
             int p = line.indexOf(" - ");
             if (p > -1) {
                 String line1 = line.substring(0, p);
-                String line2 = line.substring(p + 3);
                 this->status.push_back(line1);
-                this->status.push_back(line2);
+                p += 3;
+                if ((p + 1) < line.length()) {
+                    String line2 = line.substring(p);
+                    this->status.push_back(line2);
+                }
             } else {
                 this->status.push_back(line);
             }
