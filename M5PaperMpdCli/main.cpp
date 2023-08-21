@@ -1,3 +1,5 @@
+#include <esp_task_wdt.h>
+
 #include <time.h>
 
 #include <M5EPD.h>
@@ -12,6 +14,9 @@
 M5EPD_Canvas topline(&M5.EPD); // 0 - 40
 M5EPD_Canvas canvas(&M5.EPD); // 40 - 880
 M5EPD_Canvas bottomline(&M5.EPD); // 920 - 40
+
+// 60 seconds WDT
+#define WDT_TIMEOUT 60
 
 static bool restartByRTC = false;
 static bool is_playing = false;
@@ -36,6 +41,10 @@ void setup()
         restartByRTC = false;
         DPRINT("Reboot by power button / USB");
     }
+    // start watchdog timer in case somethings hangs
+    esp_task_wdt_init(WDT_TIMEOUT, true); // enable panic so ESP32 restarts
+    esp_task_wdt_add(NULL); // add current thread to WDT watch
+    //
     epd_init();
     // try to load configuration from flash or SD
     while (!Config.load_config()) {
@@ -71,12 +80,16 @@ void setup()
 void loop()
 {
     if (time_out > 50) {
+        esp_task_wdt_reset();
         shutdown_and_wake();
     }
     M5.update();
     if (M5.BtnL.wasPressed() || M5.BtnP.wasPressed() || M5.BtnR.wasPressed()) {
+        // reset watchdog timer, we're going interactive
+        esp_task_wdt_reset();
         // show menu
         epd_print_bottomline("menu activated");
+        // TODO: call menu code
     }
     vTaskDelay(100);
     time_out++;
