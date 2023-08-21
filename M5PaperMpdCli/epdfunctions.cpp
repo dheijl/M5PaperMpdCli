@@ -20,6 +20,8 @@ void epd_init()
     canvas.createCanvas(540, 880);
     canvas.setTextSize(3);
     canvas.clear();
+    canvas.setTextArea(10, 10, 530, 870);
+    canvas.setTextWrap(true, false);
     bottomline.createCanvas(540, 40);
     bottomline.setTextSize(3);
     bottomline.clear();
@@ -36,11 +38,10 @@ void epd_print_topline(const String& s)
 void epd_print_canvas(const StatusLines& sl)
 {
     canvas.clear();
-    int x = 10, y = 10;
     for (auto line : sl) {
         DPRINT(line);
-        canvas.drawString(line, x, y);
-        y += 40;
+        canvas.println(line);
+        canvas.setCursor(canvas.getCursorX(), canvas.getCursorY() + 10);
     }
     canvas.pushCanvas(0, 40, UPDATE_MODE_DU4);
 }
