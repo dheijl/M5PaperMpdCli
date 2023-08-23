@@ -40,10 +40,10 @@ void epd_print_canvas(const StatusLines& sl)
     canvas.clear();
     for (auto line : sl) {
         DPRINT(line);
+        canvas.setCursor(canvas.getCursorX(), canvas.getCursorY() + 14);
         canvas.println(line);
-        canvas.setCursor(canvas.getCursorX(), canvas.getCursorY() + 10);
     }
-    canvas.pushCanvas(0, 40, UPDATE_MODE_DU4);
+    canvas.pushCanvas(0, 40, UPDATE_MODE_A2);
 }
 
 void epd_print_bottomline(const String& s)
