@@ -30,8 +30,9 @@ void setup()
     //  which calls RTC.begin() which clears the timer flag.
     Wire.begin(21, 22);
     uint8_t reason = M5.RTC.readReg(0x01);
-    // now it's safe to start M5EPD
+    // now it's safe to start M5EPD & RTC
     M5.begin(true, true, true, true, false);
+    // enable temp & humidity sensor
     M5.SHT30.Begin();
     // check reboot reason flag: TIE (timer int enable) && TF (timer flag active)
     if ((reason & 0b0000101) == 0b0000101) {
@@ -44,7 +45,7 @@ void setup()
     // start watchdog timer in case somethings hangs
     esp_task_wdt_init(WDT_TIMEOUT, true); // enable panic so ESP32 restarts
     esp_task_wdt_add(NULL); // add current thread to WDT watch
-    //
+    // setup EPD canvases
     epd_init();
     // try to load configuration from flash or SD
     while (!Config.load_config()) {
@@ -59,8 +60,6 @@ void setup()
         vTaskDelay(200);
         M5.shutdown(3600);
     }
-    // enable external BM8563 RTC
-    M5.RTC.begin();
     // sync time with NTP if not RTC wake-up
     if (!restartByRTC) {
         sync_time();
