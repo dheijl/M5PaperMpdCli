@@ -24,18 +24,12 @@
 #include "config.h"
 #include "epdfunctions.h"
 
-typedef struct menuline {
-    uint16_t x;
-    uint16_t y;
-    const char* text;
-} MENULINE;
-
 class SubMenu {
 private:
     uint16_t x;
     uint16_t y;
     uint16_t y_incr;
-    vector<MENULINE*> lines;
+    MenuLines lines;
 
 public:
     SubMenu(uint16_t y_incr)

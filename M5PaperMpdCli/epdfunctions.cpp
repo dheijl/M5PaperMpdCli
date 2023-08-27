@@ -46,7 +46,7 @@ void epd_print_canvas(const StatusLines& sl)
     canvas.pushCanvas(0, 40, UPDATE_MODE_A2);
 }
 
-void epd_draw_menu(const vector<MENULINE*>& lines, const int selected)
+void epd_draw_menu(const MenuLines& lines, const int selected)
 {
     canvas.clear();
     int i = 0;
