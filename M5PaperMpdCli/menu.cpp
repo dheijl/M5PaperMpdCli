@@ -23,6 +23,11 @@
 
 #include <M5EPD.h>
 
+void Menu::toggle_start_stop()
+{
+    mpd.toggle_mpd_status();
+}
+
 void Menu::select_player()
 {
     auto players = Config.getPlayers();
@@ -56,6 +61,8 @@ void Menu::Show()
     int npages = (nfavs % Menu::MAXLINES) == 0 ? (nfavs / Menu::MAXLINES) : (nfavs / Menu::MAXLINES) + 1;
     int selected = this->MainMenu.display_menu();
     if (selected == 0) {
+        this->toggle_start_stop();
+    } else if (selected == 1) {
         this->select_player();
     } else if (selected <= npages) {
         this->select_favourite(selected - 1);
@@ -68,6 +75,7 @@ void Menu::CreateMenus()
     // main menu
     DPRINT("Creating MAIN menu");
     static const constexpr char* mlines[] {
+        "Start/Stop Play",
         "Select Player",
         "Favourites 1",
         "Favourites 2",
@@ -80,11 +88,11 @@ void Menu::CreateMenus()
     int nfavs = favs.size();
     int npages = (nfavs % Menu::MAXLINES) == 0 ? (nfavs / Menu::MAXLINES) : (nfavs / Menu::MAXLINES) + 1;
     npages = min(npages, 5);
-    this->MainMenu.reserve(npages + 2);
-    for (int i = 0; i <= npages; i++) {
+    this->MainMenu.reserve(npages + 3);
+    for (int i = 0; i <= npages + 1; i++) {
         this->MainMenu.add_line(mlines[i]);
     }
-    this->MainMenu.add_line(mlines[6]);
+    this->MainMenu.add_line(mlines[7]);
     DPRINT("Main menu lines: " + String(MainMenu.size()));
     // player menu
     DPRINT("Creating PLAYER menu");

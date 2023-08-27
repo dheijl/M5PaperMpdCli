@@ -136,6 +136,7 @@ private:
     SubMenu MainMenu;
     SubMenu PlayerMenu;
     vector<SubMenu*> FavouriteMenus;
+    void toggle_start_stop();
     void select_player();
     void select_favourite(int page);
 
