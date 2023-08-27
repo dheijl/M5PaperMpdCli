@@ -46,6 +46,23 @@ void epd_print_canvas(const StatusLines& sl)
     canvas.pushCanvas(0, 40, UPDATE_MODE_A2);
 }
 
+void epd_draw_menu(const vector<MENULINE*>& lines, const int selected)
+{
+    canvas.clear();
+    int i = 0;
+    for (auto l : lines) {
+        DPRINT(l->text);
+        if (i++ == selected) {
+            canvas.setTextColor(15, 0);
+            canvas.drawString(String(l->text), l->x, l->y);
+        } else {
+            canvas.setTextColor(0, 15);
+            canvas.drawString(String(l->text), l->x, l->y);
+        }
+    }
+    canvas.pushCanvas(0, 40, UPDATE_MODE_A2);
+}
+
 void epd_print_bottomline(const String& s)
 {
     DPRINT(s);

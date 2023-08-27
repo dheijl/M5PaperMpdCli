@@ -6,14 +6,13 @@
 
 #include "config.h"
 #include "epdfunctions.h"
+#include "menu.h"
 #include "mpdcli.h"
 #include "synctime.h"
 #include "utils.h"
 #include "wifi.h"
 
-M5EPD_Canvas topline(&M5.EPD); // 0 - 40
-M5EPD_Canvas canvas(&M5.EPD); // 40 - 880
-M5EPD_Canvas bottomline(&M5.EPD); // 920 - 40
+static Menu menu;
 
 // 60 seconds WDT
 #define WDT_TIMEOUT 60
@@ -73,6 +72,7 @@ void setup()
     } else {
         epd_print_topline("Power on by PWR Btn/USB");
         epd_print_bottomline("Press any button for Menu");
+        menu.CreateMenus();
     }
 }
 
@@ -86,9 +86,8 @@ void loop()
     if (M5.BtnL.wasPressed() || M5.BtnP.wasPressed() || M5.BtnR.wasPressed()) {
         // reset watchdog timer, we're going interactive
         esp_task_wdt_reset();
-        // show menu
         epd_print_bottomline("menu activated");
-        // TODO: call menu code
+        menu.Show();
     }
     vTaskDelay(100);
     time_out++;

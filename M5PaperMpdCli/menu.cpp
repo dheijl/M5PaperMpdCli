@@ -16,12 +16,11 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-#include "menu.h"
-#include "flash_fs.h"
-#include "mpdcli.h"
-
 #include <M5EPD.h>
+
+#include "flash_fs.h"
+#include "menu.h"
+#include "mpdcli.h"
 
 void Menu::toggle_start_stop()
 {
@@ -34,8 +33,7 @@ void Menu::select_player()
     int selected = this->PlayerMenu.display_menu();
     if ((selected >= 0) && (selected < players.size())) {
         auto pl = players[selected]->player_name;
-        tft_clear();
-        tft_println("New player @" + String(pl));
+        epd_print_bottomline("New player @" + String(pl));
         Config.set_player_index((uint16_t)selected);
         NVS_Config::write_player_index(selected);
     }
@@ -49,14 +47,12 @@ void Menu::select_favourite(int page)
     if ((selected >= 0) && (selected < fav_menu->size() - 1)) {
         selected = (page * Menu::MAXLINES) + selected;
         FAVOURITE& fav = *favs[selected];
-        tft_clear();
         mpd.play_favourite(fav);
     }
 }
 
 void Menu::Show()
 {
-    tft_clear();
     int nfavs = Config.getFavourites().size();
     int npages = (nfavs % Menu::MAXLINES) == 0 ? (nfavs / Menu::MAXLINES) : (nfavs / Menu::MAXLINES) + 1;
     int selected = this->MainMenu.display_menu();
@@ -67,7 +63,6 @@ void Menu::Show()
     } else if (selected <= npages) {
         this->select_favourite(selected - 1);
     }
-    tft_clear();
 }
 
 void Menu::CreateMenus()
@@ -121,4 +116,54 @@ void Menu::CreateMenus()
         DPRINT("Favourites menu " + String(page) + " lines: " + String(favmenu->size()));
     }
     DPRINT("Menus created");
+}
+
+int SubMenu::display_menu()
+{
+    int selected = 0;
+    bool repaint = true;
+    while (true) {
+        vTaskDelay(5);
+        if (repaint) {
+            repaint = false;
+            epd_draw_menu(this->lines, selected);
+        }
+        M5.update();
+        if (M5.BtnL.wasPressed()) { // up
+            selected -= 1;
+            if (selected < 0) {
+                selected = this->size() - 1;
+            }
+            repaint = true;
+            continue;
+        }
+        if (M5.BtnR.wasPressed()) { // down
+            selected += 1;
+            if (selected > (this->size() - 1)) {
+                selected = 0;
+            }
+            repaint = true;
+            continue;
+        }
+        if (M5.BtnP.wasPressed()) { // select
+            return selected;
+        }
+        // select with touch
+        M5.update();
+        auto count = M5.TP.getFingerNum();
+        if (count > 0) {
+            for (uint i = 0; i < count; ++i) {
+                auto det = M5.TP.readFinger(i);
+                int sel = 0;
+                for (auto ml : this->lines) {
+                    if ((det.y >= ml->y) && (det.y <= ml->y + 12)) {
+                        selected = sel;
+                        repaint = true;
+                        continue;
+                    }
+                    ++sel;
+                }
+            }
+        }
+    }
 }

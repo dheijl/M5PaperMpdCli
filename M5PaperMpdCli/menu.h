@@ -24,10 +24,6 @@
 #include "config.h"
 #include "epdfunctions.h"
 
-#define tft_write(a, b, c, d) ; //
-#define tft_clear() ; //
-#define tft_println(x) ; //
-
 typedef struct menuline {
     uint16_t x;
     uint16_t y;
@@ -40,17 +36,6 @@ private:
     uint16_t y;
     uint16_t y_incr;
     vector<MENULINE*> lines;
-    void draw_menu(const int selected)
-    {
-        int i = 0;
-        for (auto l : this->lines) {
-            if (i++ == selected) {
-                tft_write(l->x, l->y, TFT_GREENYELLOW, String(l->text));
-            } else {
-                tft_write(l->x, l->y, TFT_WHITE, String(l->text));
-            }
-        }
-    }
 
 public:
     SubMenu(uint16_t y_incr)
@@ -79,56 +64,7 @@ public:
         this->lines.push_back(new MENULINE { this->x, this->y, line });
         this->y += this->y_incr;
     }
-    int display_menu()
-    {
-        tft_clear();
-        int selected = 0;
-        bool repaint = true;
-        while (true) {
-            vTaskDelay(5);
-            if (repaint) {
-                repaint = false;
-                this->draw_menu(selected);
-            }
-            M5.update();
-            if (M5.BtnL.wasPressed()) { // up
-                selected -= 1;
-                if (selected < 0) {
-                    selected = this->size() - 1;
-                }
-                repaint = true;
-                continue;
-            }
-            if (M5.BtnR.wasPressed()) { // down
-                selected += 1;
-                if (selected > (this->size() - 1)) {
-                    selected = 0;
-                }
-                repaint = true;
-                continue;
-            }
-            if (M5.BtnP.wasPressed()) { // select
-                return selected;
-            }
-            // select with touch
-            M5.update();
-            auto count = M5.TP.getFingerNum();
-            if (count > 0) {
-                for (uint i = 0; i < count; ++i) {
-                    auto det = M5.TP.readFinger(i);
-                    int sel = 0;
-                    for (auto ml : this->lines) {
-                        if ((det.y >= ml->y) && (det.y <= ml->y + 12)) {
-                            selected = sel;
-                            repaint = true;
-                            continue;
-                        }
-                        ++sel;
-                    }
-                }
-            }
-        }
-    }
+    int display_menu();
 };
 
 class Menu {
