@@ -53,10 +53,10 @@ void epd_draw_menu(const MenuLines& lines, const int selected)
     for (auto l : lines) {
         DPRINT(l->text);
         if (i++ == selected) {
-            canvas.setTextColor(15, 0);
+            canvas.setTextColor(0, 15);
             canvas.drawString(String(l->text), l->x, l->y);
         } else {
-            canvas.setTextColor(0, 15);
+            canvas.setTextColor(15, 0);
             canvas.drawString(String(l->text), l->x, l->y);
         }
     }
