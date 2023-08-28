@@ -122,6 +122,7 @@ void Menu::CreateMenus()
 int SubMenu::display_menu()
 {
     int selected = 0;
+    int oldselected = -1;
     bool repaint = true;
     while (true) {
         vTaskDelay(5);
@@ -164,7 +165,12 @@ int SubMenu::display_menu()
                     for (auto ml : this->lines) {
                         if ((det.y >= ml->y + CANVAS_Y) && (det.y <= ml->y + CANVAS_Y + 30)) {
                             DPRINT("TOUCH: sel=" + String(sel));
+                            // hack: activate selection with right-hand side touch of selected menuline
+                            if ((oldselected == selected) && (det.x > 270)) {
+                                return selected;
+                            }
                             selected = sel;
+                            oldselected = sel;
                             repaint = true;
                             continue;
                         }
