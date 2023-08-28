@@ -33,8 +33,8 @@ private:
 
 public:
     SubMenu(uint16_t y_incr)
-        : x(2)
-        , y(2)
+        : x(10)
+        , y(10)
     {
         this->y_incr = y_incr;
     }
@@ -73,7 +73,7 @@ private:
 public:
     static const int MAXLINES = 20;
     Menu()
-        : MainMenu(30)
+        : MainMenu(40)
         , PlayerMenu(40)
     {
     }

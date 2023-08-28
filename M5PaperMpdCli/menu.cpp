@@ -17,6 +17,7 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <M5EPD.h>
+#include <esp_task_wdt.h>
 
 #include "flash_fs.h"
 #include "menu.h"
@@ -60,8 +61,8 @@ void Menu::Show()
         this->toggle_start_stop();
     } else if (selected == 1) {
         this->select_player();
-    } else if (selected <= npages) {
-        this->select_favourite(selected - 1);
+    } else if (selected <= (1 + npages)) {
+        this->select_favourite(selected - 2);
     }
 }
 
@@ -102,7 +103,7 @@ void Menu::CreateMenus()
     this->FavouriteMenus.reserve(npages + 1);
     for (int page = 0; page < npages; ++page) {
         DPRINT("Creating FAVOURITES menu " + String(page));
-        auto favmenu = new SubMenu(20);
+        auto favmenu = new SubMenu(40);
         favmenu->reserve(11);
         int ifrom = page * Menu::MAXLINES;
         int ito = ifrom + Menu::MAXLINES;
@@ -124,6 +125,7 @@ int SubMenu::display_menu()
     bool repaint = true;
     while (true) {
         vTaskDelay(5);
+        esp_task_wdt_reset();
         if (repaint) {
             repaint = false;
             epd_draw_menu(this->lines, selected);
@@ -149,19 +151,25 @@ int SubMenu::display_menu()
             return selected;
         }
         // select with touch
-        M5.update();
-        auto count = M5.TP.getFingerNum();
-        if (count > 0) {
-            for (uint i = 0; i < count; ++i) {
-                auto det = M5.TP.readFinger(i);
-                int sel = 0;
-                for (auto ml : this->lines) {
-                    if ((det.y >= ml->y) && (det.y <= ml->y + 12)) {
-                        selected = sel;
-                        repaint = true;
-                        continue;
+        M5.TP.update();
+        if (M5.TP.available()) {
+            auto count = M5.TP.getFingerNum();
+            if (count > 0) {
+                for (uint i = 0; i < count; ++i) {
+                    DPRINT("TOUCH Finger: " + String(i));
+                    auto det = M5.TP.readFinger(i);
+                    M5.TP.flush();
+                    DPRINT("TOUCH X=" + String(det.x) + ", Y=" + String(det.y));
+                    int sel = 0;
+                    for (auto ml : this->lines) {
+                        if ((det.y >= ml->y + CANVAS_Y) && (det.y <= ml->y + CANVAS_Y + 30)) {
+                            DPRINT("TOUCH: sel=" + String(sel));
+                            selected = sel;
+                            repaint = true;
+                            continue;
+                        }
+                        ++sel;
                     }
-                    ++sel;
                 }
             }
         }

@@ -32,35 +32,38 @@ void epd_print_topline(const String& s)
     DPRINT(s);
     topline.clear();
     topline.drawString(s, 10, 10);
-    topline.pushCanvas(0, 0, UPDATE_MODE_DU4);
+    topline.pushCanvas(0, TOPLINE_Y, UPDATE_MODE_DU4);
 }
 
 void epd_print_canvas(const StatusLines& sl)
 {
     canvas.clear();
+    canvas.setCursor(0, 0);
+    canvas.setTextColor(15, 0);
     for (auto line : sl) {
         DPRINT(line);
         canvas.setCursor(canvas.getCursorX(), canvas.getCursorY() + 14);
         canvas.println(line);
     }
-    canvas.pushCanvas(0, 40, UPDATE_MODE_A2);
+    canvas.pushCanvas(0, CANVAS_Y, UPDATE_MODE_A2);
 }
 
 void epd_draw_menu(const MenuLines& lines, const int selected)
 {
     canvas.clear();
+    canvas.setCursor(0, 0);
     int i = 0;
     for (auto l : lines) {
         DPRINT(l->text);
         if (i++ == selected) {
             canvas.setTextColor(0, 15);
             canvas.drawString(String(l->text), l->x, l->y);
-        } else {
             canvas.setTextColor(15, 0);
+        } else {
             canvas.drawString(String(l->text), l->x, l->y);
         }
     }
-    canvas.pushCanvas(0, 40, UPDATE_MODE_A2);
+    canvas.pushCanvas(0, CANVAS_Y, UPDATE_MODE_A2);
 }
 
 void epd_print_bottomline(const String& s)
@@ -68,5 +71,5 @@ void epd_print_bottomline(const String& s)
     DPRINT(s);
     bottomline.clear();
     bottomline.drawString(s, 10, 0);
-    bottomline.pushCanvas(0, 910, UPDATE_MODE_DU4);
+    bottomline.pushCanvas(0, BOTTOMLINE_Y, UPDATE_MODE_DU4);
 }

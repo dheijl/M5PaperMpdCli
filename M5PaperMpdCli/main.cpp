@@ -78,7 +78,7 @@ void setup()
 
 void loop()
 {
-    if (time_out > 50) {
+    if (time_out > 100) {
         esp_task_wdt_reset();
         shutdown_and_wake();
     }
@@ -88,6 +88,12 @@ void loop()
         esp_task_wdt_reset();
         epd_print_bottomline("menu activated");
         menu.Show();
+        vTaskDelay(500);
+        start_wifi();
+        auto res = mpd.show_mpd_status();
+        stop_wifi();
+        epd_print_canvas(res);
+        shutdown_and_wake();
     }
     vTaskDelay(100);
     time_out++;
