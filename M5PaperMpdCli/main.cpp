@@ -88,12 +88,13 @@ void loop()
         esp_task_wdt_reset();
         epd_print_bottomline("menu activated");
         menu.Show();
-        vTaskDelay(500);
+        vTaskDelay(1000);
         start_wifi();
         auto res = mpd.show_mpd_status();
         stop_wifi();
         epd_print_canvas(res);
-        shutdown_and_wake();
+        epd_print_bottomline("Press any button for Menu");
+        time_out = 0;
     }
     vTaskDelay(100);
     time_out++;
