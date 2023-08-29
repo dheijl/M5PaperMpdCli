@@ -83,8 +83,8 @@ void setup()
         sync_time();
     }
     auto res = mpd.show_mpd_status();
-    stop_wifi();
     epd_print_canvas(res);
+    stop_wifi();
     if (restartByRTC) {
         epd_print_topline("Power on by RTC timer");
         shutdown_and_wake();
@@ -97,7 +97,7 @@ void setup()
 
 void loop()
 {
-    if (time_out > 100) {
+    if (time_out > 60) {
         esp_task_wdt_reset();
         shutdown_and_wake();
     }
