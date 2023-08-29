@@ -103,15 +103,14 @@ void loop()
     }
     M5.update();
     if (M5.BtnL.wasPressed() || M5.BtnP.wasPressed() || M5.BtnR.wasPressed()) {
-        // reset watchdog timer, we're going interactive
         esp_task_wdt_reset();
         epd_print_bottomline("menu activated");
         menu.Show();
-        vTaskDelay(1000);
         start_wifi();
+        vTaskDelay(500);
         auto res = mpd.show_mpd_status();
-        stop_wifi();
         epd_print_canvas(res);
+        stop_wifi();
         epd_print_bottomline("Press any button for Menu");
         time_out = 0;
     }

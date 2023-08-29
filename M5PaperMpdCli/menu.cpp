@@ -126,10 +126,10 @@ int SubMenu::display_menu()
     bool repaint = true;
     while (true) {
         vTaskDelay(5);
-        esp_task_wdt_reset();
         if (repaint) {
             repaint = false;
             epd_draw_menu(this->lines, selected);
+            esp_task_wdt_reset();
         }
         M5.update();
         if (M5.BtnL.wasPressed()) { // up
@@ -156,6 +156,7 @@ int SubMenu::display_menu()
         if (M5.TP.available()) {
             auto count = M5.TP.getFingerNum();
             if (count > 0) {
+                esp_task_wdt_reset();
                 for (uint i = 0; i < count; ++i) {
                     DPRINT("TOUCH Finger: " + String(i));
                     auto det = M5.TP.readFinger(i);
