@@ -58,9 +58,9 @@ bool start_wifi()
     return have_wifi;
 }
 
-void stop_wifi()
+void stop_wifi(bool wifi_off)
 {
-    WiFi.disconnect();
+    WiFi.disconnect(wifi_off);
     epd_print_topline("Wifi disconnected");
     have_wifi = false;
 }

@@ -23,4 +23,4 @@
 
 bool is_wifi_connected();
 bool start_wifi();
-void stop_wifi();
+void stop_wifi(bool wifi_off = false);

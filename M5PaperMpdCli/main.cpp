@@ -84,13 +84,14 @@ void setup()
     }
     auto res = mpd.show_mpd_status();
     epd_print_canvas(res);
-    stop_wifi();
     if (restartByRTC) {
         epd_print_topline("Power on by RTC timer");
+        stop_wifi(true);
         shutdown_and_wake();
     } else {
         epd_print_topline("Power on by PWR Btn/USB");
         epd_print_bottomline("Press any button for Menu");
+        stop_wifi(false);
         menu.CreateMenus();
     }
 }
@@ -99,6 +100,7 @@ void loop()
 {
     if (time_out > 60) {
         esp_task_wdt_reset();
+        stop_wifi(true);
         shutdown_and_wake();
     }
     M5.update();
@@ -110,8 +112,8 @@ void loop()
         vTaskDelay(500);
         auto res = mpd.show_mpd_status();
         epd_print_canvas(res);
-        stop_wifi();
         epd_print_bottomline("Press any button for Menu");
+        stop_wifi(true);
         time_out = 0;
     }
     vTaskDelay(100);
