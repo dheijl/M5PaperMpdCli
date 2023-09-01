@@ -113,7 +113,7 @@ void loop()
         auto res = mpd.show_mpd_status();
         epd_print_canvas(res);
         epd_print_bottomline("Press any button for Menu");
-        stop_wifi(true);
+        stop_wifi(false);
         time_out = 0;
     }
     vTaskDelay(100);

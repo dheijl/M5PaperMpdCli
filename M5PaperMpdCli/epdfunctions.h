@@ -28,7 +28,7 @@ typedef vector<String> StatusLines;
 
 const uint16_t TOPLINE_Y = 0;
 const uint16_t CANVAS_Y = 40;
-const uint16_t BOTTOMLINE_Y = 910;
+const uint16_t BOTTOMLINE_Y = 920;
 
 void epd_init();
 void epd_print_topline(const String& s);
