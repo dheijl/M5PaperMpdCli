@@ -73,8 +73,9 @@ void setup()
     }
     epd_print_topline("Config loaded");
     if (!start_wifi()) {
+        stop_wifi(true);
+        vTaskDelay(200);
         epd_print_topline("No WIFI connection");
-        stop_wifi();
         vTaskDelay(200);
         M5.shutdown(3600);
     }
