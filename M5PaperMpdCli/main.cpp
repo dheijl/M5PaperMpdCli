@@ -69,7 +69,7 @@ void setup()
     while (!Config.load_config()) {
         epd_print_topline("No NVS-Config or SD-CONFIG");
         vTaskDelay(200);
-        M5.shutdown(3600);
+        M5.shutdown();
     }
     epd_print_topline("Config loaded");
     if (!start_wifi()) {
@@ -77,7 +77,7 @@ void setup()
         vTaskDelay(200);
         epd_print_topline("No WIFI connection");
         vTaskDelay(200);
-        M5.shutdown(3600);
+        shutdown_and_wake();
     }
     // sync time with NTP if not RTC wake-up
     if (!restartByRTC) {
@@ -86,8 +86,10 @@ void setup()
     auto res = mpd.show_mpd_status();
     epd_print_canvas(res);
     if (restartByRTC) {
-        epd_print_topline("Power on by RTC timer");
         stop_wifi(true);
+        vTaskDelay(200);
+        epd_print_topline("Power on by RTC timer");
+        vTaskDelay(200);
         shutdown_and_wake();
     } else {
         epd_print_topline("Power on by PWR Btn/USB");
