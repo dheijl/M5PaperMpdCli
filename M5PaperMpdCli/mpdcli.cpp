@@ -105,3 +105,8 @@ bool MPD_Client::is_playing()
 {
     return this->playing;
 }
+
+string MPD_Client::GetLastError()
+{
+    return this->con.GetLastError();
+}

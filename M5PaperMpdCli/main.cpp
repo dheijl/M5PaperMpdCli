@@ -85,6 +85,10 @@ void setup()
     }
     auto res = mpd.show_mpd_status();
     epd_print_canvas(res);
+    if (mpd.is_playing() && (mpd.GetLastError().find("silence") != string::npos)) {
+        mpd.toggle_mpd_status();
+        mpd.toggle_mpd_status();
+    }
     if (restartByRTC) {
         stop_wifi(true);
         vTaskDelay(200);

@@ -214,6 +214,22 @@ public:
     {
         return this->getItem("STATE");
     }
+    string getElapsed()
+    {
+        return this->getItem("ELAPSED");
+    }
+    string getDuration()
+    {
+        return this->getItem("DURATION");
+    }
+    string getFormat()
+    {
+        return this->getItem("AUDIO");
+    }
+    string getError()
+    {
+        return this->getItem("ERROR");
+    }
 };
 
 class MpdSimpleCommand : public MpdResponse {
@@ -240,6 +256,7 @@ class MpdConnection {
 private:
     WiFiClient Client;
     StatusLines status;
+    string last_error;
     string read_data()
     {
         int n = 5000;
@@ -270,9 +287,15 @@ public:
         return this->status;
     }
 
+    string GetLastError()
+    {
+        return this->last_error;
+    }
+
     bool Connect(const char* host, int port)
     {
         this->status.clear();
+        this->last_error.clear();
         if (Client.connect(host, port)) {
             this->status.push_back("CON MPD @" + String(host) + ":" + String(port));
             string data = read_data();
@@ -309,6 +332,12 @@ public:
         MpdStatus mpd_status(data);
         auto mpdstatus = mpd_status.getState();
         this->status.push_back("MPD status: " + String(mpdstatus.c_str()));
+        auto format = mpd_status.getFormat();
+        this->status.push_back("Audio: " + String(format.c_str()));
+        this->last_error = mpd_status.getError();
+        if (!this->last_error.empty()) {
+            this->status.push_back("*ERR: " + String(this->last_error.c_str()));
+        }
         return mpdstatus.compare("play") == 0;
     }
 
@@ -444,6 +473,7 @@ public:
     StatusLines& toggle_mpd_status();
     StatusLines& play_favourite(const FAVOURITE& fav);
     bool is_playing();
+    string GetLastError();
 };
 
 extern MPD_Client& mpd;
