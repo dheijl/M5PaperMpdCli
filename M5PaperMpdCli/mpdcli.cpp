@@ -72,6 +72,11 @@ StatusLines& MPD_Client::show_mpd_status()
             this->appendStatus(this->con.GetResponse());
             this->con.GetCurrentSong();
             this->appendStatus(this->con.GetResponse());
+            if (this->playing && (this->con.GetLastError().find("silence") != string::npos)) {
+                this->status.push_back("*ALSA underrun -> restart play");
+                this->toggle_mpd_status();
+                this->toggle_mpd_status();
+            }
             this->con.Disconnect();
             this->appendStatus(this->con.GetResponse());
         }
