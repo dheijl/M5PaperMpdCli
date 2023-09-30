@@ -72,12 +72,15 @@ void setup()
         M5.shutdown();
     }
     epd_print_topline("Config loaded");
-    if (!start_wifi()) {
+    int retries = 5;
+    while (!start_wifi()) {
         stop_wifi(true);
-        vTaskDelay(200);
+        vTaskDelay(1000);
         epd_print_topline("No WIFI connection");
-        vTaskDelay(200);
-        shutdown_and_wake();
+        vTaskDelay(1000);
+        if (--retries == 0) {
+            shutdown_and_wake();
+        }
     }
     // sync time with NTP if not RTC wake-up
     if (!restartByRTC) {

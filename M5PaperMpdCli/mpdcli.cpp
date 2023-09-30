@@ -72,6 +72,8 @@ StatusLines& MPD_Client::show_mpd_status()
             this->appendStatus(this->con.GetResponse());
             this->con.GetCurrentSong();
             this->appendStatus(this->con.GetResponse());
+            // attempt to capture the "Alsa underrun sending silence" error message
+            // but unfortunately it looks like mpd does only log the message, it never gets here
             if (this->playing && (this->con.GetLastError().find("silence") != string::npos)) {
                 this->status.push_back("*ALSA XRUN -> restarting play");
                 this->con.Stop();
