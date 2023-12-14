@@ -67,29 +67,39 @@ void shutdown_and_wake()
     esp_deep_sleep((long)(sleep_time + 1) * 1000000L);
 }
 
+// battery percentage, see https://github.com/m5stack/M5EPD/issues/48
+static uint bat_percent()
+{
+    const uint32_t BAT_LOW = 3300;
+    const uint32_t BAT_HIGH = 4350;
+    auto clamped = std::min(std::max(M5.getBatteryVoltage(), BAT_LOW), BAT_HIGH);
+    auto perc = (float)(clamped - BAT_LOW) / (float)(BAT_HIGH - BAT_LOW) * 100.0f;
+    auto bat_perc = (uint)perc;
+    return bat_perc;
+}
+
 bool on_battery()
 {
     // compute battery percentage, >= 99% = on usb power, less = on battery
-    float bat_volt = (float)(M5.getBatteryVoltage() - 3200) / 1000.0f;
-    int v = (int)(((float)bat_volt / 1.05f) * 100);
-    return v >= 99 ? false : true;
+    return bat_percent() >= 99 ? false : true;
 }
 
 String get_status()
 {
-    float bat_volt = (float)(M5.getBatteryVoltage() - 3200) / 1000.0f;
-    int bat_level = (int)(((float)bat_volt / 1.05f) * 100);
+    // heap and psram
     auto heap = ESP.getFreeHeap() / 1024;
     auto psram = ESP.getFreePsram() / (1024 * 1024);
+    // temperaturte and humidity
     M5.SHT30.UpdateData();
     auto temp = M5.SHT30.GetTemperature();
     auto hum = M5.SHT30.GetRelHumidity();
+    // format
     char stemp[10];
     char shum[10];
     dtostrf(temp, 2, 1, stemp);
     dtostrf(hum, 2, 1, shum);
-
-    return String("B" + String(bat_level) + "%,H" + String(heap) + "K,R" + String(psram) + "M," + "T" + stemp + "C,H" + shum + "%");
+    auto bat_perc = bat_percent();
+    return String("B" + String(bat_perc) + "%,H" + String(heap) + "K,R" + String(psram) + "M," + "T" + stemp + "C,H" + shum + "%");
 }
 
 String get_date_time()
