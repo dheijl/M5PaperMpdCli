@@ -297,7 +297,7 @@ public:
         this->status.clear();
         this->last_error.clear();
         if (Client.connect(host, port)) {
-            this->status.push_back("CON MPD @" + String(host) + ":" + String(port));
+            this->status.push_back("MPD @" + String(host) + ":" + String(port));
             string data = read_data();
             if (data.length() == 0) {
                 return false;
@@ -317,7 +317,7 @@ public:
     void Disconnect()
     {
         this->status.clear();
-        this->status.push_back("Disconnect MPD");
+        // this->status.push_back("Disconnect MPD");
         Client.stop();
     }
 
@@ -329,11 +329,15 @@ public:
         if (data.length() == 0) {
             return false;
         }
+        this->status.push_back(" ");
         MpdStatus mpd_status(data);
         auto mpdstatus = mpd_status.getState();
-        this->status.push_back("MPD status: " + String(mpdstatus.c_str()));
         auto format = mpd_status.getFormat();
-        this->status.push_back("Audio: " + String(format.c_str()));
+        if (mpdstatus == "play") {
+            this->status.push_back("Playing (" + String(format.c_str()) + ")");
+        } else {
+            this->status.push_back("Stopped (" + String(format.c_str()) + ")");
+        }
         this->last_error = mpd_status.getError();
         if (!this->last_error.empty()) {
             this->status.push_back("*ERR: " + String(this->last_error.c_str()));
@@ -364,14 +368,18 @@ public:
             return false;
         }
         MpdCurrentSong mpd_cs(data);
-        String file = String(mpd_cs.getFile().c_str());
-        int p = file.lastIndexOf('/');
-        file = file.substring(p + 1);
+        auto curfile = mpd_cs.getFile();
+        auto l = curfile.length();
+        auto p = l <= 26 ? 0 : l - 26;
+        auto tail = String(curfile.substr(p).c_str());
+        String file = "..." + tail;
         this->status.push_back(file);
+        this->status.push_back(" ");
         string name = mpd_cs.getName();
         if (!name.empty()) {
             this->status.push_back(name.c_str());
         }
+        this->status.push_back(" ");
         string title = mpd_cs.getTitle();
         if (!title.empty()) {
             this->status.push_back(title.c_str());

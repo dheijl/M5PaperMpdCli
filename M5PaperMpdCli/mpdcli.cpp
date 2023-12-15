@@ -63,6 +63,7 @@ StatusLines& MPD_Client::show_mpd_status()
     this->status.clear();
     this->status.push_back(get_date_time());
     this->status.push_back(get_status());
+    this->status.push_back(" ");
     if (start_wifi()) {
         auto player = Config.get_active_mpd();
         this->status.push_back(show_player(player));
