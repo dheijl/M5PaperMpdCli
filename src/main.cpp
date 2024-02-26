@@ -29,7 +29,7 @@
 #include "mpdcli.h"
 #include "synctime.h"
 #include "utils.h"
-#include "wifi.h"
+#include "wifi_utils.h"
 
 static Menu menu;
 

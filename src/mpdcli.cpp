@@ -22,7 +22,7 @@
 #include "config.h"
 #include "mpdcli.h"
 #include "utils.h"
-#include "wifi.h"
+#include "wifi_utils.h"
 
 static MPD_Client _mpd;
 MPD_Client& mpd = _mpd;
@@ -54,6 +54,9 @@ StatusLines& MPD_Client::toggle_mpd_status()
             this->con.Disconnect();
             this->appendStatus(this->con.GetResponse());
         }
+        return this->status;
+    } else {
+        this->status.clear();
         return this->status;
     }
 }

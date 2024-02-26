@@ -26,7 +26,7 @@
 #include <vector>
 
 #include <WiFi.h>
-#include <WifiClient.h>
+#include <WiFiClient.h>
 
 #include "epdfunctions.h"
 
