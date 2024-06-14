@@ -37,24 +37,29 @@ bool start_wifi()
     if ((have_wifi) && (WiFi.status() == WL_CONNECTED)) {
         return true;
     }
+    int retries = 5;
 
-    // Turn on WiFi
-    WiFi.disconnect();
-    WiFi.softAPdisconnect(true);
-    epd_print_topline("Connecting wifi...");
-    WiFi.mode(WIFI_STA);
-    auto ap = Config.getNW_CFG();
-    WiFi.begin(ap.ssid, ap.psw);
-    have_wifi = false;
-    long now = millis();
-    while ((millis() - now) < 10000) {
-        if (WiFi.status() == WL_CONNECTED) {
-            have_wifi = true;
-            break;
+    while (retries-- > 0 && !have_wifi) {
+        // Turn on WiFi
+        WiFi.disconnect();
+        WiFi.softAPdisconnect(true);
+        epd_print_topline("Connecting wifi...");
+        WiFi.mode(WIFI_STA);
+        auto ap = Config.getNW_CFG();
+        WiFi.begin(ap.ssid, ap.psw);
+        have_wifi = false;
+        long now = millis();
+        while ((millis() - now) < 10000) {
+            if (WiFi.status() == WL_CONNECTED) {
+                have_wifi = true;
+                epd_print_topline("Wifi connected");
+                return have_wifi;
+            }
         }
-        vTaskDelay(50);
+        stop_wifi();
+        vTaskDelay(500);
     }
-    epd_print_topline("Wifi connected");
+    epd_print_topline("NO Wifi connection");
     return have_wifi;
 }
 
