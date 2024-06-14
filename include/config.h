@@ -48,6 +48,7 @@ typedef struct network_cfg {
 
 typedef struct mpd_player {
     const char* player_name;
+    const char* player_hostname;
     const char* player_ip;
     uint16_t player_port;
     const char* ntp_server;

@@ -21,8 +21,6 @@
 
 #include <time.h>
 
-#include <M5EPD.h>
-
 #include "config.h"
 #include "epdfunctions.h"
 #include "menu.h"
@@ -72,20 +70,16 @@ void setup()
         M5.shutdown();
     }
     epd_print_topline("Config loaded");
-    int retries = 5;
-    while (!start_wifi()) {
-        stop_wifi(true);
-        vTaskDelay(1000);
-        epd_print_topline("No WIFI connection");
-        vTaskDelay(1000);
-        if (--retries == 0) {
-            shutdown_and_wake();
-        }
+
+    if (!start_wifi()) {
+        vTaskDelay(500);
+        shutdown_and_wake();
     }
     // sync time with NTP if not RTC wake-up
     if (!restartByRTC) {
         sync_time();
     }
+
     auto res = mpd.show_mpd_status();
     epd_print_canvas(res);
     if (restartByRTC) {
