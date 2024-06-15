@@ -36,29 +36,10 @@ Configuration& Config = config;
 bool Configuration::load_config()
 {
     if (this->load_SD_config()) {
-        if (start_wifi()) {
-            // convert .local hostname to ip if needed
-            MDNS.begin("m5paper_mpd");
-            for (auto pl : Config.getPlayers()) {
-                if (pl->player_ip == NULL) {
-                    string localname = string(pl->player_hostname);
-                    auto pos = localname.find(".local");
-                    if (pos != std::string::npos) {
-                        // ESP32 MDNS bug: .local suffix has to be stripped !
-                        localname.erase(pos, localname.length());
-                        epd_print_topline("Lookup MDNS .local ip");
-                        IPAddress ip = MDNS.queryHost(localname.c_str(), 2000);
-                        pl->player_ip = strdup(ip.toString().c_str());
-                    } else {
-                        pl->player_ip = strdup(pl->player_hostname);
-                    }
-                }
-            }
-            if (this->save_FLASH_config()) {
-                epd_print_topline("Configuration saved to FLASH");
-            } else {
-                epd_print_topline("Error saving to FLASH");
-            }
+        if (this->save_FLASH_config()) {
+            epd_print_topline("Configuration saved to FLASH");
+        } else {
+            epd_print_topline("Error saving to FLASH");
         }
     } else {
         if (!this->load_FLASH_config()) {
@@ -75,7 +56,23 @@ void Configuration::set_player_index(uint16_t new_pl)
 
 const MPD_PLAYER& Configuration::get_active_mpd()
 {
-    return *(this->mpd_players[config.player_index]);
+    auto player = &*(this->mpd_players[config.player_index]);
+    // convert .local hostname to ip if needed
+    MDNS.begin("m5paper_mpd");
+    if (player->player_ip == NULL) {
+        string localname = string(player->player_hostname);
+        auto pos = localname.find(".local");
+        if (pos != std::string::npos) {
+            // ESP32 MDNS bug: .local suffix has to be stripped !
+            localname.erase(pos, localname.length());
+            epd_print_topline("MDNS lookup: " + String(player->player_hostname));
+            IPAddress ip = MDNS.queryHost(localname.c_str(), 2000);
+            player->player_ip = strdup(ip.toString().c_str());
+        } else {
+            player->player_ip = strdup(player->player_hostname);
+        }
+    }
+    return *player;
 }
 
 const NETWORK_CFG& Configuration::getNW_CFG()
