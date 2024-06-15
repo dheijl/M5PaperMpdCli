@@ -105,7 +105,7 @@ bool NVS_Config::write_players(const PLAYERS& players)
     int i = 0;
     for (auto pl : players) {
         string key = std::to_string(i);
-        String data = String(pl->player_name) + "|" + String(pl->player_ip) + "|" + String(std::to_string(pl->player_port).c_str());
+        String data = String(pl->player_name) + "|" + String(pl->player_hostname) + "|" + String(std::to_string(pl->player_port).c_str());
         if (prefs.putString(key.c_str(), data) == 0) {
             result = false;
             epd_print_topline("players prefs put error");
@@ -141,7 +141,8 @@ bool NVS_Config::read_players(PLAYERS& players)
             if (parts.size() == 3) {
                 auto mpd = new MPD_PLAYER();
                 mpd->player_name = strdup(parts[0].c_str());
-                mpd->player_ip = strdup(parts[1].c_str());
+                mpd->player_hostname = strdup(parts[1].c_str());
+                mpd->player_ip = NULL;
                 mpd->player_port = stoi(parts[2]);
                 players.push_back(mpd);
                 epd_print_topline(String(mpd->player_name) + " " + String(mpd->player_ip) + ":" + String(mpd->player_port));
