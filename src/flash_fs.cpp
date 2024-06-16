@@ -145,7 +145,7 @@ bool NVS_Config::read_players(PLAYERS& players)
                 mpd->player_ip = NULL;
                 mpd->player_port = stoi(parts[2]);
                 players.push_back(mpd);
-                epd_print_topline(String(mpd->player_name) + " " + String(mpd->player_ip) + ":" + String(mpd->player_port));
+                epd_print_topline(String(mpd->player_name) + " " + String(mpd->player_hostname) + ":" + String(mpd->player_port));
             }
         }
         DPRINT(pl);
