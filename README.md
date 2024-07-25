@@ -1,4 +1,5 @@
 # M5PaperMpdCli
+
  Simple WiFi M5Paper MPD client (Arduino) for Moode player or other MPD based players.
 
  It's basically an "always on" version of my similar M5 Core2 project. The E-paper allows me to keep the display always up-to-date.
