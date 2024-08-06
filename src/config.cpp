@@ -58,15 +58,16 @@ const MPD_PLAYER& Configuration::get_active_mpd()
 {
     auto player = &*(this->mpd_players[config.player_index]);
     // convert .local hostname to ip if needed
-    MDNS.begin("m5paper_mpd");
+    MDNS.begin("M5Paper");
     if (player->player_ip == NULL) {
         string localname = string(player->player_hostname);
         auto pos = localname.find(".local");
         if (pos != std::string::npos) {
+            epd_print_topline("MDNS lookup: " + String(player->player_hostname));
             // ESP32 MDNS bug: .local suffix has to be stripped !
             localname.erase(pos, localname.length());
-            epd_print_topline("MDNS lookup: " + String(player->player_hostname));
-            IPAddress ip = MDNS.queryHost(localname.c_str(), 2000);
+            IPAddress ip = MDNS.queryHost(localname.c_str());
+            epd_print_topline("MDNS IP: " + ip.toString());
             player->player_ip = strdup(ip.toString().c_str());
         } else {
             player->player_ip = strdup(player->player_hostname);

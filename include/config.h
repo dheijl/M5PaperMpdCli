@@ -30,7 +30,7 @@ using std::string;
 using std::vector;
 
 #undef DEBUG
-// #define DEBUG
+//#define DEBUG
 #undef DEBUGMPDMESSAGES
 
 #ifdef DEBUG
