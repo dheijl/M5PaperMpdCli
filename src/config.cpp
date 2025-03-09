@@ -38,10 +38,12 @@ bool Configuration::load_config()
     if (this->load_SD_config()) {
         if (this->save_FLASH_config()) {
             epd_print_topline("Configuration saved to FLASH");
-        } else {
+        }
+        else {
             epd_print_topline("Error saving to FLASH");
         }
-    } else {
+    }
+    else {
         if (!this->load_FLASH_config()) {
             return false;
         }
@@ -57,19 +59,34 @@ void Configuration::set_player_index(uint16_t new_pl)
 const MPD_PLAYER& Configuration::get_active_mpd()
 {
     auto player = &*(this->mpd_players[config.player_index]);
+    auto null_ip = IPAddress((uint32_t)0);
     // convert .local hostname to ip if needed
-    MDNS.begin("M5Paper");
+    if (!MDNS.begin("m5paper")) {
+        epd_print_topline("MDNS begin failure!");
+        return *player;
+    }
     if (player->player_ip == NULL) {
         string localname = string(player->player_hostname);
         auto pos = localname.find(".local");
+        auto ip = null_ip;
         if (pos != std::string::npos) {
-            epd_print_topline("MDNS lookup: " + String(player->player_hostname));
             // ESP32 MDNS bug: .local suffix has to be stripped !
             localname.erase(pos, localname.length());
-            IPAddress ip = MDNS.queryHost(localname.c_str());
+            //for (auto& c : localname) { c = toupper(c); }
+            epd_print_topline("MDNS lookup: " + String(localname.c_str()));
+            ip = MDNS.queryHost(localname.c_str());
+        }
+        if (ip == null_ip) {
+            localname += ".local";
+            epd_print_topline("MDNS lookup: " + String(localname.c_str()));
+            ip = MDNS.queryHost(player->player_hostname);
+        }
+        if (ip != null_ip) {
             epd_print_topline("MDNS IP: " + ip.toString());
             player->player_ip = strdup(ip.toString().c_str());
-        } else {
+        }
+        else {
+            epd_print_topline("MDNS IP: not found");
             player->player_ip = strdup(player->player_hostname);
         }
     }
@@ -98,7 +115,8 @@ bool Configuration::load_SD_config()
         && SD_Config::read_players(this->mpd_players)
         && SD_Config::read_favourites(this->favourites)) {
         return true;
-    } else {
+    }
+    else {
         return false;
     }
 }
@@ -111,7 +129,8 @@ bool Configuration::load_FLASH_config()
         && NVS_Config::read_favourites(this->favourites)
         && NVS_Config::read_player_index()) {
         return true;
-    } else {
+    }
+    else {
         return false;
     }
 }
@@ -123,7 +142,8 @@ bool Configuration::save_FLASH_config()
         && NVS_Config::write_players(this->mpd_players)
         && NVS_Config::write_favourites(this->favourites)) {
         return true;
-    } else {
+    }
+    else {
         return false;
     }
 }
